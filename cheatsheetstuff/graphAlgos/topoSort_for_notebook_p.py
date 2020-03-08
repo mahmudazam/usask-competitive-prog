@@ -4,4 +4,4 @@
 def topoSort():
     ts=[]
     #call dfs on all nodes
-
+    print(" ".join(map(int, ts)))
