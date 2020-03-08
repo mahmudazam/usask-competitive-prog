@@ -8,4 +8,5 @@ def kruskals():
         if True: # change to UF.isSameSet(e[1][1], e[1][0]):
             mst_cost+=e[0]
             #UF.unionSet(e[1][1], e[1][0])
+
     #print costs
