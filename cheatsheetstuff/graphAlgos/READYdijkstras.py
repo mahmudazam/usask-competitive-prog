@@ -1,5 +1,5 @@
 # tested on following kattis problems given by ids
-# shortestpath1, shortestpath2(modified), flowerytrails(modified), fulltank(modified)
+# shortestpath1, shortestpath2(modified), flowerytrails(testt still i think it does), fulltank(modified)
 def dijkstras(s):
     global adj, V, inf,dist
     dist=[inf]*V; dist[s]=0
