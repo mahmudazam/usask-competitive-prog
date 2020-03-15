@@ -1,4 +1,5 @@
-#
+#tested on following kattis problems given by ids
+# brexit(modified), pickupsticks
 def topoSortBFS():
     global adj, V, res
     deg=[0]*V
