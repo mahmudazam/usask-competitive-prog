@@ -1,4 +1,5 @@
 #mat can be a adj list or an adj mat but needs to work in this manner of hash table 
+#tested on lostmap, cats, need to translate it to more problems later lots i just used kruskals in c++ ^-^
 def mstPrimsfaster():
     global pq, taken, mat, disto, inf
     taken=[False]*V
