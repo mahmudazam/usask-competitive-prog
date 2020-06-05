@@ -1,6 +1,6 @@
 #kmp works on id stringmatching, irepeatmyself, 
 #suffix sort tested on suffixsorting
-#longest common prefix repeatedsubstrings, dvaput
+#longest common prefix(also means suffix array works) repeatedsubstrings, dvaput, substrings
 
 class STR_ALGOS:
     def __init__(self):
