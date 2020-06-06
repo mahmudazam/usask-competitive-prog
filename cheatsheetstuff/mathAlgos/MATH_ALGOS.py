@@ -1,6 +1,6 @@
 #is_prime tested on primes2
-#lcm/gcd tested on temperatureconfusion, primes2, dasblinkenlights, jackpot, 
-#prsteni, smallestmultiple
+#lcm/gcd tested on temperatureconfusion, primes2, dasblinkenlights, jackpot, prsteni, smallestmultiple, jughard
+#extendedEuclid tested on candydistribution, modulararithmetic
 
 class MATH_ALGOS:
     def __init__(self):
@@ -52,3 +52,10 @@ class MATH_ALGOS:
         if n>1:
             facts.append(n)
         return facts
+    
+    def extendedEuclid(self, a, b):
+        if b==0:
+            return 1,0,a
+        x,y,d=self.extendedEuclid(b, a%b)
+        return y, x-y*(a//b), d
+    
