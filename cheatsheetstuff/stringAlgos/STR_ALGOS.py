@@ -36,12 +36,12 @@ class STR_ALGOS:
     
     def prepSA(self, s):
         k=1
-        self.T=s+chr(0)
-        self.n=len(self.T)
+        self.T=s+chr(0)*(100010)
+        self.n=len(s)+1
         self.c=[0]*max(300,self.n)
         self.tempSA=[0]*self.n
         self.tempRA=[0]*self.n
-        self.RA=[ord(C) for C in self.T]
+        self.RA=[ord(C) for C in self.T[:self.n]]
         self.SA=[i for i in range(self.n)]
         self.K=[]
         while k<self.n:
@@ -106,3 +106,52 @@ class STR_ALGOS:
             L=max(L-1,0)
         for i in range(self.n):
             self.LCP[i]=self.PLCP[self.SA[i]]
+    
+    def strncmp(self, ind):
+        for i in range(self.m):
+            if self.P[i]!=self.T[ind+i]:
+                return ord(self.T[ind+i])-ord(self.P[i])
+        return 0
+    
+    def stringMatching(self, s):
+        self.P=s
+        self.m=len(s)
+        lo,hi,mid,b=0,self.n-1,0,len(s)
+        while lo<hi:
+            mid=(lo+hi)//2
+            res=self.strncmp(self.SA[mid])
+            if res>=0:
+                hi=mid
+            else:
+                lo=mid+1
+        if self.strncmp(self.SA[lo])!=0:
+            return (-1,-1)
+        alo=lo
+        lo,hi,mid=alo,self.n-1,0
+        while lo<hi:
+            mid=(lo+hi)//2
+            res=self.strncmp(self.SA[mid])
+            if res>0:
+                hi=mid
+            else:
+                lo=mid+1
+        if self.strncmp(self.SA[hi])!=0:
+            hi-=1
+        return (alo, hi)
+
+    def LRS(self):
+        ind,maxLCP=0,-1
+        for i in range(1, self.n):
+            if self.LCP[i]>maxLCP:
+                ind,maxLCP=i,self.LCP[i]
+        return (maxLCP, ind)
+    
+    def owner(self, ind):
+        return 1 if ind<self.n-self.m-1 else 2
+    
+    def LCS(self):
+        ind,maxLCP=0,-1
+        for i in range(1, self.n):
+            if owner(self.SA[i]) != owner(self.SA[i-1]) and self.LCP[i]>maxLCP:
+                ind,maxLCP=i,self.LCP[i]
+        return (maxLCP, ind)
