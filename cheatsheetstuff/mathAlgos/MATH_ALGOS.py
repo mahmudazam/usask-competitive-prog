@@ -93,7 +93,12 @@ class MATH_ALGOS:
     def fib_logn(self, n):
         self.fibs={}
         return self.fib_logn_rec(n)
-        
+    
+    def power_mod(self, b, e, m):
+        x=1
+        while e>0:
+            b, e, x=b*b%m, e//2, b*x%m if 1&e else x
+        return x
 
 obj=MATH_ALGOS()
 
