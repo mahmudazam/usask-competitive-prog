@@ -47,6 +47,33 @@ class MATH_ALGOS:
     def gen_set_primes(self):
         self.pss=set(self.ps)
     
+    #mods for other functions: deal with three or 4 lines: facts(l1), append both inside and lst if(l2)
+    #last line of while loor(l3), line after while loop(l4) 
+    #only modded lines will show up
+    #numPF(self, n): return ans
+    #l1:ans=0
+    #l2:empty
+    #l3:ans+=1
+    #sumPF(self, n): return ans
+    #l1:ans=0
+    #l2:empty
+    #l3:ans+=p
+    #numDiffPF(self, n): return ans
+    #l1:ans=0
+    #l2:ans+=1
+    #numDivs(self, n): return ans
+    #l1: ans=1
+    #l2: power=0
+    #l3: power+=1
+    #l4: ans+=(power+1)
+    #sumDivs(self, n): return ans
+    #l1: ans=1
+    #l2: power=0
+    #l3: power+=1
+    #l4: ans+=(pow(p, power+1)-1)//(p-1)
+    #phi(self,n) return ans
+    #l1: ans=n
+    #l2: ans-=(ans//p)
     def pFactorize(self, n):
         facts=[]
         for p in self.ps:
