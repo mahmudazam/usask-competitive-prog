@@ -3,6 +3,8 @@
 #extendedEuclid tested on candydistribution, modulararithmetic
 #
 #fib_logn tested on porpoises, anti11
+#sieve_primes tested on
+#is_prime_mrpt tested on primereduction, primes2
 
 class MATH_ALGOS:
     def __init__(self):
@@ -11,7 +13,7 @@ class MATH_ALGOS:
     def set_N(self, val):
         self.N=val
     
-    def is_prime(self, n):
+    def is_prime_triv(self, n):
         if n<=3:
             return n>1
         elif n%2==0 or n%3==0:
@@ -31,7 +33,7 @@ class MATH_ALGOS:
     def lcm(self, u, v):
         return u*v//self.gcd(u,v)
     
-    def Sieve(self, n):
+    def sieve_primes(self, n):
         pb=[True]*n
         self.ps=[2]
         for i in range(4, n, 2):
@@ -41,6 +43,9 @@ class MATH_ALGOS:
                 self.ps.append(i)
                 for j in range(i*i, n, 2*i):
                     pb[j]=False
+    
+    def gen_set_primes(self):
+        self.pss=set(self.ps)
     
     def pFactorize(self, n):
         facts=[]
@@ -99,6 +104,33 @@ class MATH_ALGOS:
         while e>0:
             b, e, x=b*b%m, e//2, b*x%m if 1&e else x
         return x
+    
+    def is_comp(self, a, d, n, s):
+        if pow(a, d, n)==1:
+            return False
+        for i in range(s):
+            if pow(a, 2**i*d, n)==n-1:
+                return False
+        return True 
+    
+    def is_prime_mrpt(self, n, pfhn=16):
+        if n in self.pss:
+            return True
+        if any((n%self.ps[p]==0) for p in range(50)) or n<2 or n==3215031751:
+            return False
+        d,s=n-1,0
+        while not (1&d):
+            d,s=d//2,s+1
+        for i,bound in enumerate(self.inds,2):
+            if n<bound:
+                return not any(self.is_comp(self.mrps[j], d, n, s) for j in range(i))
+        return not any(self.is_comp(self.ps[j], d, n, s) for j in range(pfhn))
+    
+    def prep_mrpt(self):
+        self.sieve_primes(1000) #comment out if different size needed
+        self.gen_set_primes() #comment out if already have bigger size
+        self.inds=[1373653, 25326001, 118670087467, 2152302898747, 3474749660383, 341550071728321]
+        self.mrps=[2, 3, 5, 7, 11, 13, 17]
 
 obj=MATH_ALGOS()
 
