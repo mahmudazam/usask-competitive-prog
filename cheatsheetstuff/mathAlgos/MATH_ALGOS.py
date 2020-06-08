@@ -5,6 +5,8 @@
 #fib_logn tested on porpoises, anti11
 #sieve_primes tested on
 #is_prime_mrpt tested on primereduction, primes2
+#catalan_n tested on catalan, catalansquare
+#catalan_n_mod_p tested on fiat
 
 class MATH_ALGOS:
     def __init__(self):
@@ -80,9 +82,9 @@ class MATH_ALGOS:
             if p*p>n:
                 break
             if n%p==0:
-                facts.append(p)
                 while n%p==0:
                     n//=p
+                    facts.append(p)
         if n>1:
             facts.append(n)
         return facts
@@ -158,6 +160,43 @@ class MATH_ALGOS:
         self.gen_set_primes() #comment out if already have bigger size
         self.inds=[1373653, 25326001, 118670087467, 2152302898747, 3474749660383, 341550071728321]
         self.mrps=[2, 3, 5, 7, 11, 13, 17]
+    
+    #mod with an array for repeated use (works on smaller n<10000ish(gets slow after that))
+    def catalan_n(self, n):
+        self.cat=[0]*(n+1)
+        nxt=0
+        self.cat[nxt]=1
+        for i in range(n):
+            self.cat[i+1]=self.cat[i]*(4*i+2)//(i+2)
+    
+    #use this when you need (cat n)%p since p usually < 10**10 will run faster than calling above and modding after
+    def catalan_n_mod_p(self, n, p):
+        from collections import Counter
+        self.sieve_primes(int((5*n)**0.5))
+        TPF={}
+        BPF={}
+        for i in range(n):
+            a=self.pFactorize(4*i+2)
+            pfs=Counter(a)
+            for k,v in pfs.items():
+                if k not in TPF:
+                    TPF[k]=v
+                else:
+                    TPF[k]+=v
+            a=self.pFactorize(i+2)
+            pfs=Counter(a)
+            for k,v in pfs.items():
+                if k not in BPF:
+                    BPF[k]=v
+                else:
+                    BPF[k]+=v
+        for k,v in BPF.items():
+            TPF[k]-=v
+        ans=1
+        for k,v in TPF.items():
+            if v>0:
+                ans*=pow(k,v,p)
+        return ans%p
 
 obj=MATH_ALGOS()
 
