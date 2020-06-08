@@ -7,6 +7,8 @@
 #is_prime_mrpt tested on primereduction, primes2
 #catalan_n tested on catalan, catalansquare
 #catalan_n_mod_p tested on fiat
+#binomialCoefficient tested on lockedtreasure, election
+#binomialCoefficientdp election
 
 class MATH_ALGOS:
     def __init__(self):
@@ -161,7 +163,7 @@ class MATH_ALGOS:
         self.inds=[1373653, 25326001, 118670087467, 2152302898747, 3474749660383, 341550071728321]
         self.mrps=[2, 3, 5, 7, 11, 13, 17]
     
-    #mod with an array for repeated use (works on smaller n<10000ish(gets slow after that))
+    #mod with an array for repeated use    
     def catalan_n(self, n):
         self.cat=[0]*(n+1)
         nxt=0
@@ -169,7 +171,6 @@ class MATH_ALGOS:
         for i in range(n):
             self.cat[i+1]=self.cat[i]*(4*i+2)//(i+2)
     
-    #use this when you need (cat n)%p since p usually < 10**10 will run faster than calling above and modding after
     def catalan_n_mod_p(self, n, p):
         from collections import Counter
         self.sieve_primes(int((5*n)**0.5))
@@ -198,5 +199,24 @@ class MATH_ALGOS:
                 ans*=pow(k,v,p)
         return ans%p
 
+    #O(k) versuon to get (n,k) space O(1)
+    def binomialCoefficient(self,n,k):
+        k=min(k, n-k)
+        res=1
+        for i in range(k):
+            res*=(n-i)
+            res//=(i+1)
+        return res
+    
+    #O(n^2) i think its n^2 gets memozing 
+    def binomialCoefficientdp(self, n, k):
+        if n==k or k==0:
+            return 1
+        if (n,k) not in self.binomial:
+            self.binomial[(n,k)]=self.binomialCoefficientdp(n-1,k)+self.binomialCoefficientdp(n-1,k-1)
+        return self.binomial[(n,k)]
+    
+    def binomialCoefficientPrep(self):
+        self.binomial={}
 obj=MATH_ALGOS()
 
