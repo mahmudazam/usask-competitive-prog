@@ -1,15 +1,16 @@
 import math
 from sys import stdin as rf
 
-#euclidean_distance (floats)tested on cursethedarkness, sibice
+#euclidean_distance (floats)tested on cursethedarkness, sibice, imperfectgps
 #dist_pt_seg tested on goatrope
+#segments_intersect tested on countingtriangles
 EPS=1e-12
 #todo make sure we know the math behind the functions it loosk like 
 # a lot of matrix operation stuffs 
 #uncomment the comment the commented lines for floating point cords
 class pt_xy:
-    def __init__(self, new_x, new_y):self.x,self.y=map(round,(new_x,new_y))
-    #def __init__(self, new_x=float(0), new_y=float(0)):self.x,self.y=map(float,(new_x,new_y))
+    #def __init__(self, new_x, new_y):self.x,self.y=map(round,[new_x,new_y])
+    def __init__(self, new_x=float(0), new_y=float(0)):self.x,self.y=map(float,(new_x,new_y))
     
     def set_pt_i(self, n_pt_xy): self.x,self.y=n_pt_xy.x,n_pt_xy.y
     def display(self): print(self.x,self.y)
@@ -65,3 +66,21 @@ class GEO_ALGOS:
         ba=b-a
         ca=c-a
         return abs(self.cross(ba,ca)/self.euclidean_distance(a,b))
+    
+    def lines_parallel(self, a, b, c, d):
+        return (abs(self.cross(b-a, c-d))<EPS)
+        
+    def lines_collinear(self, a, b, c, d):
+        return (self.lines_parallel(a,b,c,d) 
+        and (abs(self.cross(a-b, a-c))<EPS)
+        and (abs(self.cross(c-d, c-a))<EPS))
+    
+    def segments_intersect(self, a, b, c, d):
+        if self.lines_collinear(a, b, c, d):
+            if self.dist2(a, c)<EPS or self.dist2(a, d)<EPS or self.dist2(b, c)<EPS or self.dist2(b, d)<EPS:
+                return True
+            return not(self.dot(c-a, c-b)>0 and self.dot(d-a, d-b)>0 and self.dot(c-b, d-b)>0)
+        ba=b-a
+        dc=d-c
+        if self.cross(d-a, ba)*self.cross(c-a, ba)>0: return False
+        return not(self.cross(a-c, dc)*self.cross(b-c, dc)>0)
