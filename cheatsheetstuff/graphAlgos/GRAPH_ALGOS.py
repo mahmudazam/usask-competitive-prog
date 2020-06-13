@@ -1,15 +1,17 @@
 from sys import stdin as rf
-INF=2000000000
+#dijkstras tested shortestpath1, shortestpath2(modified works), flowerytrails(modified works), fulltank(modified)
+INF=1000000000
+
 class GRAPH_ALGOS():
     def __init__(self):
         self.adj={}
     
+    #modify the bottom two as needed
     def init_adj(self, n):
         self.adj={i:{} for i in range(n)}
     
     def add_edge_adj(self, u, v, w):
-        if v in self.adj[u]: self.adj[u][v]=min(w, self.adj[u][v])
-        else: self.adj[u][v]=w
+        self.adj[u][v]=w
     
     def dijkstras(self, s, t):
         import heapq as h
