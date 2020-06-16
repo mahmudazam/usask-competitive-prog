@@ -58,16 +58,16 @@ class GEO_ALGOS:
     def dist_pt_line(self, a, b, c): #cross product version to fomula sheeet
         return self.euclidean_distance(c, self.project_pt_line(a,b,c))
     
-    def lines_parallel(self, a, b, c, d):
-        return (abs(self.cross(b-a, c-d))<EPS)
+    def is_lines_parallel(self, a, b, c, d):
+        return (abs(self.cross_product(b-a, c-d))<EPS)
         
-    def lines_collinear(self, a, b, c, d):
+    def is_lines_collinear(self, a, b, c, d): #copy paste code if its too slow this is safety from typing errors
         return (self.lines_parallel(a,b,c,d) 
-        and (abs(self.cross(a-b, a-c))<EPS)
-        and (abs(self.cross(c-d, c-a))<EPS))
+        and self.lines_parallel(b,a,a,c) 
+        and self.lines_parallel(d,c,c,a))
     
-    def segments_intersect(self, a, b, c, d):
-        if self.lines_collinear(a, b, c, d):
+    def is_segments_intersect(self, a, b, c, d):
+        if self.is_lines_collinear(a, b, c, d):
             if self.dist2(a, c)<EPS or self.dist2(a, d)<EPS or self.dist2(b, c)<EPS or self.dist2(b, d)<EPS:
                 return True
             return not(self.dot(c-a, c-b)>0 and self.dot(d-a, d-b)>0 and self.dot(c-b, d-b)>0)
