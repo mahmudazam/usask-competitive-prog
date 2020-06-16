@@ -25,47 +25,38 @@ class pt_xy:
     #def __eq__(self, b): return (self.x==b.x) and (self.y==b.y)
     def __lt__(self, b): return (self.x<b.x) if abs(self.x-b.x)<EPS else (self.y<b.y)
     def __eq__(self, b): return (abs(self.x-b.x)<EPS) and (abs(self.y-b.y)<EPS)
-    
+
 class GEO_ALGOS:
     def __init__(self):
         pass
     
-    def euclidean_distance(self, a, b):
-        ror=a-b
-        return math.hypot(ror.x,ror.y)
+    def euclidean_distance(self, a, b): return math.hypot((a-b).x, (a-b).y)
     
-    def dot(self, a, b): return a.x*b.x+a.y*b.y
-    def dist2(self, a, b): return self.dot(a-b,a-b)
-    def cross(self, a, b): return a.x*b.y-a.y*b.x
+    #TODO look up and see how well the z cord translates into these functions
+    def dot_product(self, a, b): return a.x*b.x+a.y*b.y #move to point class
+    def cross_product(self, a, b): return a.x*b.y-a.y*b.x
     
     def rotate_ccw90(self, p): return pt_xy(-p.y, p.x)
     def rotate_cw90(self, p):  return pt_xy( p.y,-p.x)
-    def rotate_ccw(self, p, t):
+    def rotate_ccw(self, p, t): 
         return pt_xy(p.x*math.cos(t)-p.y*math.sin(t), p.x*math.sin(t)+p.y*math.cos(t))
     
-    def move_pt_dist_deg(self, p, d, t):
-        return pt_xy(p.x+d*math.sin(t), p.y+d*math.cos(t))
+    def project_pt_line(self, a, b, c): 
+        return a+(b-a)*self.dot_product(c-a,b-a)/self.dot_product(b-a, b-a)
     
-    def project_pt_line(self, a, b, c):
-        pass
-        
-    def project_pt_seg(self, a, b, c):
-        ba=b-a
-        ca=c-a
-        r=self.dot(ba,ba)
-        if math.fabs(r)<EPS: return a
-        r=self.dot(ca,ba)/r
+    def project_pt_line_segment(self, a, b, c):
+        r=self.dot_product(b-a,b-a)
+        if abs(r)<EPS: return a
+        r=self.dot_product(c-a,b-a)/r
         if r<0: return a
         elif r>1: return b
-        else: return a+ba*r
+        else: return a+(b-a)*r
     
-    def dist_pt_seg(self, a, b, c):
-        return math.sqrt(self.dist2(c, self.project_pt_seg(a,b,c)))
-    
-    def dist_pt_line(self, a,b,c):
-        ba=b-a
-        ca=c-a
-        return abs(self.cross(ba,ca)/self.euclidean_distance(a,b))
+    def dist_pt_segment(self, a, b, c):
+        return self.euclidean_distance(c, self.project_pt_line_segment(a,b,c))
+        
+    def dist_pt_line(self, a, b, c): #cross product version to fomula sheeet
+        return self.euclidean_distance(c, self.project_pt_line(a,b,c))
     
     def lines_parallel(self, a, b, c, d):
         return (abs(self.cross(b-a, c-d))<EPS)
@@ -84,3 +75,4 @@ class GEO_ALGOS:
         dc=d-c
         if self.cross(d-a, ba)*self.cross(c-a, ba)>0: return False
         return not(self.cross(a-c, dc)*self.cross(b-c, dc)>0)
+    
