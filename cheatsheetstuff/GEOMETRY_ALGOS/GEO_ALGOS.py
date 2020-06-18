@@ -1,4 +1,3 @@
-
 import math
 from sys import stdin as rf
 
@@ -26,6 +25,8 @@ class pt_xy:
     #def __eq__(self, b): return (self.x==b.x) and (self.y==b.y)
     def __lt__(self, b): return (self.x<b.x) if abs(self.x-b.x)<EPS else (self.y<b.y)
     def __eq__(self, b): return (abs(self.x-b.x)<EPS) and (abs(self.y-b.y)<EPS)
+    
+    def __round__(self, n): return pt_xy(round(self.x,n),round(self.y,n))
 
 class GEO_ALGOS:
     def __init__(self):
@@ -112,4 +113,45 @@ class GEO_ALGOS:
         y=math.sqrt(r1*r1-x*x)
         v=(b-a)/d
         i,j=a+v*x,self.rotate_ccw90(v)*y
-        return (i+j) if not(y>0): else (i+j, i-j)
+        return (i+j) if not(y>0) else (i+j, i-j)
+    
+    def triangle_area_2bh(self, b, h):
+        return b*h/2
+    
+    def triangle_area_heron(self, ab, bc, ca):
+        s=self.triangle_perimeter(ab, bc, ca)*0.5
+        return math.sqrt(s*(s-ab)*(s-bc)*(s-ca))
+        
+    def triangle_perimeter(self, ab, bc, ca):
+        return ab+bc+ca
+        
+    def incircle_helper(self, ab, bc, ca):
+        return self.triangle_area_heron(ab, bc, ca)/(self.triangle_perimeter(ab, bc, ca)*0.5)
+    
+    def triangle_incircle_radius(self, a, b, c):
+        ab=self.euclidean_distance(a,b)
+        bc=self.euclidean_distance(b,c)
+        ca=self.euclidean_distance(c,a)
+        return self.incircle_helper(ab,bc,ca)
+    
+    def triangle_incircle(self, a, b, c):
+        r=self.triangle_incircle_radius(a,b,c)
+        if abs(r)<EPS: return (False,0,0)
+        ratio=self.euclidean_distance(a,b)/self.euclidean_distance(a,c)
+        p1=b+(c-b)*(ratio/(1.0+ratio))
+        
+        ratio=self.euclidean_distance(a,b)/self.euclidean_distance(b,c)
+        p2=a+(c-a)*(ratio/(1.0+ratio))
+        if self.is_lines_intersect(a,p1,b,p2): return (True, r, round(self.pt_lines_intersect(a,p1,b,p2),12))
+        else: return  (False,0,0)
+    
+    def circumcircle_helper(self, ab, bc, ca):
+        return ab*bc*ca/(4*self.triangle_area_heron(ab,bc,ca))
+        
+    def triangle_circumcircle_radius(self, a, b, c):
+        ab=self.euclidean_distance(a,b)
+        bc=self.euclidean_distance(b,c)
+        ca=self.euclidean_distance(c,a)
+        return self.circumcircle_helper(ab,bc,ca)
+    
+    
