@@ -1,8 +1,9 @@
+
 import math
 from sys import stdin as rf
 
 EPS=1e-10
-NUM_SIG=15
+NUM_SIG=12
 
 class MATRIX_ALGOS:
     def __init__(self, inMat):
@@ -39,18 +40,30 @@ class MATRIX_ALGOS:
             self.mat[pk][pk]=1.0
             for p in range(n): self.mat[pk][p]*=c
             for p in range(m): b.mat[pk][p]*=c
-            for p in range(n): self.mat[]
-        
-
+            for p in range(n):
+                if p!=pk:
+                    c=self.mat[p][pk]
+                    self.mat[p][pk]=0
+                    for q in range(n): self.mat[p][q]-=(self.mat[pk][q]*c)
+                    for q in range(m): b.mat[p][q]-=(b.mat[pk][q]*c)
+        for p in range(n-1, -1, -1):
+            if irow[p]==icol[p]: continue
+            for k in range(n): self.mat[k][irow[p]],self.mat[k][icol[p]]=self.mat[k][icol[p]],self.mat[k][irow[p]]
+        for i in range(n):
+            for j in range(n): self.mat[i][j]=round(self.mat[i][j],NUM_SIG)
+            for j in range(m): b.mat[i][j]=round(b.mat[i][j],NUM_SIG)
+        return round(det,NUM_SIG)
+    
 def main():
-    obj=GEO_ALGOS()
-    a=pt_xy(0,0)
-    b=pt_xy(4,0)
-    c=pt_xy(4,3)
-    r=obj.triangle_incircle_radius(a,b,c)
-    p1=obj.triangle_incenter(a,b,c)
-    p2=obj.triangle_circumcenter(a,b,c)
-    print(r)
-    p1.display()
-    p2.display()
+    A=[[1,2,3,4],[1,0,1,0],[5,3,2,4],[6,1,4,6]]
+    B=[[1,2],[4,3],[5,6],[8,7]]
+    a=MATRIX_ALGOS(A)
+    b=MATRIX_ALGOS(B)
+    det=a.gauss_jordan(b)
+    print(det)
+    for row in a.mat:
+        print(row)
+    print()
+    for row in b.mat:
+        print(row)
 main()
