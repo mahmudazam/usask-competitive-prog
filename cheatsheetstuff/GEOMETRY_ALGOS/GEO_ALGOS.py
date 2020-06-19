@@ -53,6 +53,10 @@ class GEO_ALGOS:
     def point_rotation_wrt_line(self, a, b, c):
         return self.epscmp(self.cross_product(b-a,c-a))
     
+    def angle_abc(self, a, b, c): #MARKED
+        ab,cb=a-b,c-b
+        return math.acos(self.dot_product(ab,cb)/math.sqrt(self.dot_product(ab,ab)*self.dot_product(cb,cb)))
+    
     def project_pt_line(self, a, b, c): 
         return a+(b-a)*self.dot_product(c-a,b-a)/self.dot_product(b-a, b-a)
     
@@ -199,20 +203,20 @@ class GEO_ALGOS:
     
     #note these are based on counter clowck wise ordering 
     #check for improvements on integers
-    def polygon_perimeter(self, ps):
+    def polygon_perimeter(self, ps):#MARKED
         return math.fsum([self.euclidean_distance(ps[i], ps[i+1]) for i in range(len(ps)-1)])
     
-    def polygon_signed_area(self, ps):
+    def polygon_signed_area(self, ps): #MARKED
         return math.fsum([self.cross_product(ps[i], ps[i+1]) for i in range(len(ps)-1)])/2
     
-    def polygon_area(self, ps):
+    def polygon_area(self, ps): #MARKED
         return abs(self.polygon_signed_area(ps))
     
     #notes for this function (subject to change)
     #test it obviously 
     #isLeft is for counter clockwise swapping rot=-1 goes for clock wise ordering
     #not modified for colinear points yet
-    def polygon_convex(self, ps):
+    def polygon_convex(self, ps): #MARKED
         lim,rot=len(ps),1
         if lim<4: return False
         isLeft=(1==self.point_rotation_wrt_line(ps[0],ps[1],ps[2]))
@@ -220,3 +224,23 @@ class GEO_ALGOS:
             if isLeft!=(rot==self.point_rotation_wrt_line(ps[i],ps[i+1],ps[i+1 if i+2<lim else 1])):
                 return False
         return True
+    
+    #maybe change to not fsum but i think fsum good idea 
+    def polygon_has_pt(self, ps, p): #MARKED
+        if len(ps)<4: return 0
+        tmp=[self.angle_abc(ps[i],p,ps[i+1]) for i in range(len(ps)-1)]
+        soa=math.fsum([el if 1==self.point_rotation_wrt_line(ps[i],p,ps[i+1]) else -el for i,el in enumerate(tmp)])
+        return (0==self.epscmp(abs(soa)-math.tau))
+
+def main():
+    obj=GEO_ALGOS()
+    a=pt_xy(0,0)
+    b=pt_xy(4,0)
+    c=pt_xy(4,3)
+    r=obj.triangle_incircle_radius(a,b,c)
+    p1=obj.triangle_incenter(a,b,c)
+    p2=obj.triangle_circumcenter(a,b,c)
+    print(r)
+    p1.display()
+    p2.display()
+main()
