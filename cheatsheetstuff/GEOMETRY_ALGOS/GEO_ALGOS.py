@@ -5,14 +5,16 @@ from sys import stdin as rf
 #dist_pt_seg tested on goatrope
 #segments_intersect tested on countingtriangles
 EPS=1e-12
+NUM_SIG=9
 #todo make sure we know the math behind the functions it loosk like 
 # a lot of matrix operation stuffs 
 #uncomment the comment the commented lines for floating point cords
 class pt_xy:
     #def __init__(self, new_x, new_y):self.x,self.y=map(round,[new_x,new_y])
-    def __init__(self, new_x=float(0), new_y=float(0)):self.x,self.y=map(float,(new_x,new_y))
+    def __init__(self, new_x=float(0), new_y=float(0)):
+        self.x,self.y=round(new_x, NUM_SIG), round(new_y, NUM_SIG)
     
-    def set_pt_i(self, n_pt_xy): self.x,self.y=n_pt_xy.x,n_pt_xy.y
+    def set_pt_xy(self, n_pt_xy): self.x,self.y=n_pt_xy.x,n_pt_xy.y
     def display(self): print(self.x,self.y)
         
     def __add__(self, b): return pt_xy(self.x+b.x, self.y+b.y)
@@ -32,6 +34,9 @@ class GEO_ALGOS:
     def __init__(self):
         pass
     
+    def epscmp(self, x):
+        return -1 if x<-EPS else 1 if x>EPS else 0
+    
     def euclidean_distance(self, a, b): return math.hypot((a-b).x, (a-b).y)
     
     #TODO look up and see how well the z cord translates into these functions
@@ -44,6 +49,9 @@ class GEO_ALGOS:
     def rotate_cw90(self, p):  return pt_xy( p.y,-p.x)
     def rotate_ccw(self, p, t): 
         return pt_xy(p.x*math.cos(t)-p.y*math.sin(t), p.x*math.sin(t)+p.y*math.cos(t))
+    
+    def point_rotation_wrt_line(self, a, b, c):
+        return self.epscmp(self.cross_product(b-a,c-a))
     
     def project_pt_line(self, a, b, c): 
         return a+(b-a)*self.dot_product(c-a,b-a)/self.dot_product(b-a, b-a)
@@ -63,7 +71,8 @@ class GEO_ALGOS:
         return self.euclidean_distance(c, self.project_pt_line(a,b,c))
     
     def is_lines_parallel(self, a, b, c, d):
-        return (abs(self.cross_product(b-a, c-d))<EPS)
+        return (self.epscmp(self.cross_product(b-a, c-d))==0)
+        #return (abs(self.cross_product(b-a, c-d))<EPS)
         
     def is_lines_collinear(self, a, b, c, d): #copy paste code if its too slow this is safety from typing errors
         return (self.is_lines_parallel(a,b,c,d) 
@@ -134,17 +143,6 @@ class GEO_ALGOS:
         ca=self.euclidean_distance(c,a)
         return self.incircle_helper(ab,bc,ca)
     
-    def triangle_incircle(self, a, b, c):
-        r=self.triangle_incircle_radius(a,b,c)
-        if abs(r)<EPS: return (False,0,0)
-        ratio=self.euclidean_distance(a,b)/self.euclidean_distance(a,c)
-        p1=b+(c-b)*(ratio/(1.0+ratio))
-        
-        ratio=self.euclidean_distance(a,b)/self.euclidean_distance(b,c)
-        p2=a+(c-a)*(ratio/(1.0+ratio))
-        if self.is_lines_intersect(a,p1,b,p2): return (True, r, round(self.pt_lines_intersect(a,p1,b,p2),12))
-        else: return  (False,0,0)
-    
     def circumcircle_helper(self, ab, bc, ca):
         return ab*bc*ca/(4*self.triangle_area_heron(ab,bc,ca))
         
@@ -154,4 +152,71 @@ class GEO_ALGOS:
         ca=self.euclidean_distance(c,a)
         return self.circumcircle_helper(ab,bc,ca)
     
+    # def triangle_incircle(self, a, b, c):
+    #     r=self.triangle_incircle_radius(a,b,c)
+    #     if abs(r)<EPS: return (False,0,0)
+    #     ratio=self.euclidean_distance(a,b)/self.euclidean_distance(a,c)
+    #     p1=b+(c-b)*(ratio/(1.0+ratio))
+        
+    #     ratio=self.euclidean_distance(a,b)/self.euclidean_distance(b,c)
+    #     p2=a+(c-a)*(ratio/(1.0+ratio))
+    #     if self.is_lines_intersect(a,p1,b,p2): return (True, r, round(self.pt_lines_intersect(a,p1,b,p2),12))
+    #     else: return  (False,0,0)
     
+    #center of triangle circle stuff 
+    
+    def triangle_circle_center(self, a, b, c, d):
+        p1,p2=b-a,d-c
+        p1=pt_xy(p1.y,-p1.x)
+        p2=pt_xy(p2.y,-p2.x)
+        c12,c21=self.cross_product(p1,p2),self.cross_product(p2,p1)
+        if self.epscmp(c12)==0: return None # doesnt exist? colined <=> a1*c2-a2*c1=0 && b1*c2-b2*c1=0
+        p3=pt_xy(self.dot_product(a,p1), self.dot_product(c,p2))
+        return pt_xy((p3.x*p2.y-p3.y*p1.y)/c12,(p3.x*p2.x-p3.y*p1.x)/c21)
+        
+    
+    def triangle_angle_bisector(self, a, b, c):
+        val=(b-a)/math.sqrt(self.dist2(b,a))*math.sqrt(self.dist2(c,a))
+        return val+(c-a)+a
+    
+    def triangle_perpendicular_bisector(self, a, b):
+        v=b-a
+        v.x,v.y=-v.y,v.x
+        return v+(a+b)/2
+        
+    def triangle_incenter(self, a, b, c):
+        v1=self.triangle_angle_bisector(a,b,c)
+        v2=self.triangle_angle_bisector(b,c,a)
+        return self.triangle_circle_center(a, v1, b, v2)
+    
+    def triangle_circumcenter(self, a, b, c):
+        v1=self.triangle_perpendicular_bisector(a,b)
+        v2=self.triangle_perpendicular_bisector(b,c)
+        return self.triangle_circle_center((a+b)/2, v1, (b+c)/2, v2)
+    
+    def triangle_orthocenter(self, a, b, c):
+        return a+b+c-self.triangle_circumcenter(a,b,c)*2
+    
+    #note these are based on counter clowck wise ordering 
+    #check for improvements on integers
+    def polygon_perimeter(self, ps):
+        return math.fsum([self.euclidean_distance(ps[i], ps[i+1]) for i in range(len(ps)-1)])
+    
+    def polygon_signed_area(self, ps):
+        return math.fsum([self.cross_product(ps[i], ps[i+1]) for i in range(len(ps)-1)])/2
+    
+    def polygon_area(self, ps):
+        return abs(self.polygon_signed_area(ps))
+    
+    #notes for this function (subject to change)
+    #test it obviously 
+    #isLeft is for counter clockwise swapping rot=-1 goes for clock wise ordering
+    #not modified for colinear points yet
+    def polygon_convex(self, ps):
+        lim,rot=len(ps),1
+        if lim<4: return False
+        isLeft=(1==self.point_rotation_wrt_line(ps[0],ps[1],ps[2]))
+        for i in range(rot, lim-1):
+            if isLeft!=(rot==self.point_rotation_wrt_line(ps[i],ps[i+1],ps[i+1 if i+2<lim else 1])):
+                return False
+        return True
