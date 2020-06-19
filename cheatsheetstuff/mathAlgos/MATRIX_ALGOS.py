@@ -30,7 +30,16 @@ class MATRIX_ALGOS:
                 print("matrix is singular")
                 return None
             ipiv[pk]+=1
-            self.mat[pj],self.mat
+            self.mat[pj],self.mat[pk]=self.mat[pk],self.mat[pj]
+            b.mat[pj],b.mat[pk]=b.mat[pk],b.mat[pj]
+            if pj!=pk: det*=-1
+            irow[i],icol[i]=pj,pk
+            
+            c,det=1.0/self.mat[pk][pk],det*self.mat[pk][pk]
+            self.mat[pk][pk]=1.0
+            for p in range(n): self.mat[pk][p]*=c
+            for p in range(m): b.mat[pk][p]*=c
+            for p in range(n): self.mat[]
         
 
 def main():
