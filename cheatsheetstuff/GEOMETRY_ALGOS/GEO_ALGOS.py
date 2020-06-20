@@ -101,8 +101,13 @@ class GEO_ALGOS:
     def pt_lines_intersect(self, a, b, c, d):
         b,c,d=b-a,c-a,c-d
         return a+b*self.cross_product(c,d)/self.cross_product(b,d)
-        
-        
+    
+    def pt_line_segment_intersect(self, a, b, c, d):
+        y, x, cp=d.y-c.y, c.x-d.x, self.cross_product(d,c)
+        u=math.fab(y*a.x+x*a.y+cp)
+        v=math.fab(y*b.x+x*b.y+cp)
+        return pt_xy((a.x*v+b.x*u)/(v+u),(a.y*v+b.y*u)/(v+u))
+    
     #add the case for lines collinear
     def circle_center_given_abc(self, a, b, c):
         b,c=(a+b)/2,(a+c)/2
@@ -225,22 +230,89 @@ class GEO_ALGOS:
                 return False
         return True
     
-    #maybe change to not fsum but i think fsum good idea 
-    def polygon_has_pt(self, ps, p): #MARKED
-        if len(ps)<4: return 0
-        tmp=[self.angle_abc(ps[i],p,ps[i+1]) for i in range(len(ps)-1)]
-        soa=math.fsum([el if 1==self.point_rotation_wrt_line(ps[i],p,ps[i+1]) else -el for i,el in enumerate(tmp)])
-        return (0==self.epscmp(abs(soa)-math.tau))
-
+    # #doesnt work when point is on boundry and also dont understand it will look at it later
+    # #maybe change to not fsum but i think fsum good idea 
+    # def polygon_contains_pt(self, ps, p): #MARKED
+    #     if len(ps)<4: return 0
+    #     tmp=[self.angle_abc(ps[i],p,ps[i+1]) for i in range(len(ps)-1)]
+    #     soa=math.fsum([el if 1==self.point_rotation_wrt_line(ps[i],p,ps[i+1]) else -el for i,el in enumerate(tmp)])
+    #     return (0==self.epscmp(math.fabs(soa)-round(math.pi,13)*2.0))
+    
+    def polygon_contains_pt(self, ps, p):
+        ans=False
+        for i in range(len(ps)-1):
+            if (ps[i].y<=p.y and p.y<ps[i+1].y or ps[i+1].y<=p.y and p.y<ps[i].y) and \
+            (p.x<ps[i].x + (ps[i+1].x-ps[i].x)*(p.y-ps[i].y)/(ps[i+1].y-ps[i].y)):
+                ans=not ans
+        return ans
+        
+    def polygon_has_pt(self, ps, p):
+        for i in range(len(ps)-1):
+            if self.epscmp(self.dist_pt_segment(ps[i],ps[i+1],p))==0:
+                return True
+        return False   
+    
+    def polygon_centroid(self, ps):
+        ans=pt_xy(0,0)
+        for i in range(len(ps)-1):
+            ans=ans+(ps[i]+ps[i+1])*self.cross_product(ps[i],ps[i+1])
+        return ans/(6.0*self.polygon_signed_area(ps))
+    
+    #look up do see if we can do better than n^2
+    def polygon_is_simple(self, ps):
+        for i in range(len(ps)-1):
+            for k in range(i+1,len(ps)-1):
+                j,l=(i+1)%len(ps),(k+1)%len(ps)
+                if i==l or j==k: continue:
+                    if self.is_segments_intersect(ps[i],ps[j],ps[k],ps[l]):
+                        return False
+        return True
+    
+    def 
+    
+    def polygon_cut(self, ps, a, b):
+        ans=[]
+        for i in range(len(ps)-1):
+            r1,r2=self.point_rotation_wrt_line(a,b,ps[i]), self.point_rotation_wrt_line(a,b,ps[i+1])
+            if 1==r1: ans.append(ps[i])
+            elif 0==r1: 
+                ans.append(ps[i])
+                continue
+            if 1==r1 and -1==r2:
+                ans.append(self.pt_line_segment_intersect(ps[i], ps[i+1], a, b))
+        if ans and ans[0]!=ans[-1]:
+            ans.append(ans[0])
+        return ans
+    
 def main():
     obj=GEO_ALGOS()
-    a=pt_xy(0,0)
-    b=pt_xy(4,0)
-    c=pt_xy(4,3)
-    r=obj.triangle_incircle_radius(a,b,c)
-    p1=obj.triangle_incenter(a,b,c)
-    p2=obj.triangle_circumcenter(a,b,c)
-    print(r)
-    p1.display()
-    p2.display()
+    ps=[pt_xy(0,0),pt_xy(5,0),pt_xy(1,1),pt_xy(0,5),pt_xy(0,0)]
+    p0=pt_xy(0,0) 
+    p1=pt_xy(2,2)
+    p2=pt_xy(2,0)
+    p3=pt_xy(0,2)
+    p4=pt_xy(5,2)
+    p5=pt_xy(2,5)
+    print(obj.polygon_contains_pt(ps, p0))
+    print(obj.polygon_contains_pt(ps, p1))
+    print(obj.polygon_contains_pt(ps, p2))
+    print(obj.polygon_contains_pt(ps, p3))
+    print(obj.polygon_contains_pt(ps, p4))
+    print(obj.polygon_contains_pt(ps, p5))
+    print()
+    print(obj.polygon_has_pt(ps, p0))
+    print(obj.polygon_has_pt(ps, p1))
+    print(obj.polygon_has_pt(ps, p2))
+    print(obj.polygon_has_pt(ps, p3))
+    print(obj.polygon_has_pt(ps, p4))
+    print(obj.polygon_has_pt(ps, p5))
+    print(obj.polygon_area(ps))
+    ans=obj.polygon_centroid(ps)
+    ans.display()
 main()
+        
+        
+        
+        
+        
+        
