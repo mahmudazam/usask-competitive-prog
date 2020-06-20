@@ -25,10 +25,12 @@ class pt_xy:
     
     #def __lt__(self, b): return (self.x<b.x) if self.x!=b.x else (self.y<b.y)
     #def __eq__(self, b): return (self.x==b.x) and (self.y==b.y)
-    def __lt__(self, b): return (self.x<b.x) if abs(self.x-b.x)<EPS else (self.y<b.y)
+    def __lt__(self, b): return (self.x<b.x) if math.fabs(self.x-b.x)>EPS else (self.y<b.y)
     def __eq__(self, b): return (abs(self.x-b.x)<EPS) and (abs(self.y-b.y)<EPS)
     
+    
     def __round__(self, n): return pt_xy(round(self.x,n),round(self.y,n))
+    def __hash__(self):return hash((self.x,self.y))
 
 class GEO_ALGOS:
     def __init__(self):
@@ -292,8 +294,7 @@ class GEO_ALGOS:
                 while len(r)>1 and self.cross_product(r[-1]-r[-2], p-r[-2])<=0:r.pop()
                 r.append(p)
             return r
-        tmp=sorted(ps)
-        ans=[tmp[0]]+[tmp[i] for i in range(1,len(tmp)) if not tmp[i-1]==tmp[i]]
+        ans=sorted(set(ps))
         if len(ans)<=1: return ans
         lower=f(ans)
         upper=f(ans[::-1])
@@ -303,7 +304,8 @@ class GEO_ALGOS:
 def main():
     obj=GEO_ALGOS()
     test=[pt_xy(i//10, i%10) for i in range(100)]
-
+    test.append(pt_xy(0,0))
+    test.append(pt_xy(0,0))
     ans=obj.convex_hull_monotone_chain(test)
     for i in ans:
         i.display()
