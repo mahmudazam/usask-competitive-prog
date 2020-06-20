@@ -1,3 +1,4 @@
+
 import math
 from sys import stdin as rf
 
@@ -296,8 +297,7 @@ class GEO_ALGOS:
             return r
         ans=sorted(set(ps))
         if len(ans)<=1: return ans
-        lower=f(ans)
-        upper=f(ans[::-1])
+        lower,upper=f(ans),f(ans[::-1])
         return lower[:-1] + upper[:-1]
         
     
