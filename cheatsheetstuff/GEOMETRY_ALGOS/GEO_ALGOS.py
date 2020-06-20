@@ -263,12 +263,12 @@ class GEO_ALGOS:
         for i in range(len(ps)-1):
             for k in range(i+1,len(ps)-1):
                 j,l=(i+1)%len(ps),(k+1)%len(ps)
-                if i==l or j==k: continue:
-                    if self.is_segments_intersect(ps[i],ps[j],ps[k],ps[l]):
-                        return False
+                if i==l or j==k: continue
+                if self.is_segments_intersect(ps[i],ps[j],ps[k],ps[l]):
+                    return False
         return True
     
-    def 
+
     
     def polygon_cut(self, ps, a, b):
         ans=[]
@@ -284,35 +284,27 @@ class GEO_ALGOS:
             ans.append(ans[0])
         return ans
     
+    #https://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain
+    def convex_hull_monotone_chain(self, ps):
+        def f(pts):
+            r=[]
+            for p in pts:
+                while len(r)>1 and self.cross_product(r[-1]-r[-2], p-r[-2])<=0:r.pop()
+                r.append(p)
+            return r
+        tmp=sorted(ps)
+        ans=[tmp[0]]+[tmp[i] for i in range(1,len(tmp)) if not tmp[i-1]==tmp[i]]
+        if len(ans)<=1: return ans
+        lower=f(ans)
+        upper=f(ans[::-1])
+        return lower[:-1] + upper[:-1]
+        
+    
 def main():
     obj=GEO_ALGOS()
-    ps=[pt_xy(0,0),pt_xy(5,0),pt_xy(1,1),pt_xy(0,5),pt_xy(0,0)]
-    p0=pt_xy(0,0) 
-    p1=pt_xy(2,2)
-    p2=pt_xy(2,0)
-    p3=pt_xy(0,2)
-    p4=pt_xy(5,2)
-    p5=pt_xy(2,5)
-    print(obj.polygon_contains_pt(ps, p0))
-    print(obj.polygon_contains_pt(ps, p1))
-    print(obj.polygon_contains_pt(ps, p2))
-    print(obj.polygon_contains_pt(ps, p3))
-    print(obj.polygon_contains_pt(ps, p4))
-    print(obj.polygon_contains_pt(ps, p5))
-    print()
-    print(obj.polygon_has_pt(ps, p0))
-    print(obj.polygon_has_pt(ps, p1))
-    print(obj.polygon_has_pt(ps, p2))
-    print(obj.polygon_has_pt(ps, p3))
-    print(obj.polygon_has_pt(ps, p4))
-    print(obj.polygon_has_pt(ps, p5))
-    print(obj.polygon_area(ps))
-    ans=obj.polygon_centroid(ps)
-    ans.display()
+    test=[pt_xy(i//10, i%10) for i in range(100)]
+
+    ans=obj.convex_hull_monotone_chain(test)
+    for i in ans:
+        i.display()
 main()
-        
-        
-        
-        
-        
-        
