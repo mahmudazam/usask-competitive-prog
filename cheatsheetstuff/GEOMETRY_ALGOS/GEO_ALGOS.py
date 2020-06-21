@@ -29,6 +29,7 @@ class pt_xy:
     def __lt__(self, b): return (self.x<b.x) if math.fabs(self.x-b.x)>EPS else (self.y<b.y)
     def __eq__(self, b): return (abs(self.x-b.x)<EPS) and (abs(self.y-b.y)<EPS)
     
+    def __str__(self): return "(x={},y={})".format(self.x, self.y)
     
     def __round__(self, n): return pt_xy(round(self.x,n),round(self.y,n))
     def __hash__(self):return hash((self.x,self.y))
@@ -39,6 +40,8 @@ class GEO_ALGOS:
     
     def epscmp(self, x):
         return -1 if x<-EPS else 1 if x>EPS else 0
+    
+    def c_cmp(self, a, b): return 0 if math.isclose(a, b) else -1 if a<b else 1
     
     def euclidean_distance(self, a, b): return math.hypot((a-b).x, (a-b).y)
     
@@ -114,7 +117,7 @@ class GEO_ALGOS:
     #add the case for lines collinear
     def circle_center_given_abc(self, a, b, c):
         b,c=(a+b)/2,(a+c)/2
-        return self.pt_lines_intersect(b, b+self.rotate_cw90(a-b), c, c+rotate_cw90(a-c))
+        return self.pt_lines_intersect(b, b+self.rotate_cw90(a-b), c, c+self.rotate_cw90(a-c))
     
     #mod for integer return later 
     def circle_has_point(self, a, b, r): return (self.euclidean_distance(a, b)<r)
@@ -135,6 +138,30 @@ class GEO_ALGOS:
         v=(b-a)/d
         i,j=a+v*x,self.rotate_ccw90(v)*y
         return (i+j) if not(y>0) else (i+j, i-j)
+
+    def circle_tangent_point(self, a, r, p):
+        pa=p-a; x=self.dot_product(pa, pa)
+        dst=x-r**2; res=self.c_cmp(dst, 0)
+        if res==-1: return []
+        if res==0: dst=0
+        q1,q2=pa*(r**2/x),self.rotate_ccw90(pa*(-r*math.sqrt(dst)/x))
+        return [a+q1-q2,a+q1+q2]
+    
+    def circle_circle_tangents(self, c1, r1, c2, r2):
+        rTans=[]
+        if self.c_cmp(r1,r2)==0:
+            t=c2-c1
+            t=self.rotate_ccw90(t*(r1/math.sqrt(self.dot_product(t,t))))
+            rTans=[(c1+t,c2+t),(c1-t,c2-t)]
+        else:
+            p=(c1*-r2+c2*r1)/(r1-r2)
+            ps,qs=self.circle_tangent_point(c1,r1,p),self.circle_tangent_point(c2,r2,p)
+            rTans=[(ps[i],qs[i]) for i in range(min(len(ps),len(qs)))]
+        p=(c1*r2+c2*r1)/(r1+r2)
+        ps,qs=self.circle_tangent_point(c1,r1,p),self.circle_tangent_point(c2,r2,p)
+        for i in range(min(len(ps),len(qs))):
+            rTans.append((ps[i], qs[i]))
+        return rTans
     
     def triangle_area_2bh(self, b, h):
         return b*h/2
