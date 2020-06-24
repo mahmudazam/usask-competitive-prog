@@ -1,4 +1,3 @@
-
 import math
 from sys import stdin as rf
 
@@ -6,7 +5,7 @@ from sys import stdin as rf
 #dist_pt_seg tested on goatrope
 #segments_intersect tested on countingtriangles
 EPS=1e-12
-NUM_SIG=9
+NUM_SIG=2
 #todo make sure we know the math behind the functions it loosk like 
 # a lot of matrix operation stuffs 
 #uncomment the comment the commented lines for floating point cords
@@ -29,7 +28,7 @@ class pt_xy:
     def __lt__(self, b): return (self.x<b.x) if math.fabs(self.x-b.x)>EPS else (self.y<b.y)
     def __eq__(self, b): return (abs(self.x-b.x)<EPS) and (abs(self.y-b.y)<EPS)
     
-    def __str__(self): return "(x={},y={})".format(self.x, self.y)
+    def __str__(self): return "{} {}".format(self.x, self.y)
     
     def __round__(self, n): return pt_xy(round(self.x,n),round(self.y,n))
     def __hash__(self):return hash((self.x,self.y))
@@ -326,14 +325,61 @@ class GEO_ALGOS:
         if len(ans)<=1: return ans
         lower,upper=f(ans),f(ans[::-1])
         return lower[:-1] + upper[:-1]
-        
     
+    def bf_helper(self, P):
+        ans=(self.euclidean_distance(P[0], P[1]), P[0], P[1])
+        for i in range(len(P)):
+            for j in range(i+1, len(P)):
+                nd=self.euclidean_distance(P[i], P[j])
+                if nd<ans[0]:
+                    ans=(nd, P[i], P[j])
+        return ans
+
+    def closest_pair(self, X, Y):
+        p_siz=len(X)
+        if p_siz<=3: return self.bf_helper(X)
+        ri,li,l=0,0,0
+        l_siz, r_siz=p_siz-p_siz//2, p_siz//2
+        XL, XR=X[:l_siz], X[l_siz:]
+        YL, YR=[],[]
+        l=(XL[-1].x+XR[0])/2
+        for py in Y:
+            if py.x<=l: YL.append(py)
+            else: YR.append(py)
+        dl,dr=self.closest_pair(XL, YL), self.closest_pair(XR, YR)
+        da=min(dl, dr)
+
+        YP=[p for p in Y if math.fabs(p.x-l)<da[0]]
+        for i in range(len(YP)):
+            for j in range(i+1, len(YP)):
+                if self.c_cmp(YP[j].y-YP[i].y, da[0])>=0: break
+                nd=self.euclidean_distance(YP[i], YP[j])
+                if self.c_cmp(nd, da[0])<0:
+                    da=(nd, YP[i], YP[j])
+                    break
+        return da
+
+    def compute_closest_pair(self, pts):
+        X=[pt for pt in pts]
+        X.sort()
+        Y=[pt_xy(p.y, p.x) for p in X]
+        Y.sort()
+        Y=[pt_xy(p.y, p.x) for p in Y]
+        for i in range(1, len(X)):
+            if X[i]==X[i-1]:
+                return (0, X[i], X[i])
+        return self.closest_pair(X, Y)
+
 def main():
     obj=GEO_ALGOS()
-    test=[pt_xy(i//10, i%10) for i in range(100)]
-    test.append(pt_xy(0,0))
-    test.append(pt_xy(0,0))
-    ans=obj.convex_hull_monotone_chain(test)
-    for i in ans:
-        i.display()
+    n=int(rf.readline().strip())
+    while n>0:
+        pts=[None]*n
+        for i in range(n):
+            x,y=map(float, rf.readline().split())
+            pts[i]=pt_xy(x,y)
+        ans=obj.compute_closest_pair(pts)
+        print("{} {}".format(str(ans[1]),str(ans[2])))
+        n=int(rf.readline().strip())
+
 main()
