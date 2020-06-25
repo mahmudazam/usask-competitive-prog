@@ -4,15 +4,19 @@ from sys import stdin as rf
 #euclidean_distance (floats)tested on cursethedarkness, sibice, imperfectgps
 #dist_pt_seg tested on goatrope
 #segments_intersect tested on countingtriangles
+#convex_hull_monotone_chain tested on convexhull2, convexhull, dartscoring, robotprotection
+#polygon_area tested on convexpolygonarea
+#polygon_signed_area tested on polygonarea
+#polygon_where_pt tested on pointinpolygon for in on out of polygon
+
 EPS=1e-12
-NUM_SIG=2
+NUM_SIG=9
 #todo make sure we know the math behind the functions it loosk like 
 # a lot of matrix operation stuffs 
 #uncomment the comment the commented lines for floating point cords
 class pt_xy:
-    def __init__(self, new_x, new_y):self.x,self.y=map(round,[new_x,new_y])
-    #def __init__(self, new_x=float(0), new_y=float(0)):
-    #    self.x,self.y=round(new_x, NUM_SIG), round(new_y, NUM_SIG)
+    def __init__(self, new_x, new_y):self.x,self.y=map(int,[new_x,new_y])
+    #def __init__(self, new_x=float(0), new_y=float(0)): self.x,self.y=round(new_x, NUM_SIG), round(new_y, NUM_SIG)
     
     def set_pt_xy(self, n_pt_xy): self.x,self.y=n_pt_xy.x,n_pt_xy.y
     def display(self): print(self.x,self.y)
@@ -23,7 +27,7 @@ class pt_xy:
     def __truediv__(self, c): return pt_xy(self.x/c, self.y/c) #does this even make sense in a int based point
     def __floordiv__(self, c): return pt_xy(self.x//c, self.y//c)
     
-    #def __lt__(self, b): return (self.x<b.x) if self.x!=b.x else (self.y<b.y)
+    def __lt__(self, b): return (self.x<b.x) if self.x!=b.x else (self.y<b.y)
     def __eq__(self, b): return (self.x==b.x) and (self.y==b.y)
     #def __lt__(self, b): return (self.x<b.x) if math.fabs(self.x-b.x)>EPS else (self.y<b.y)
     #def __eq__(self, b): return (abs(self.x-b.x)<EPS) and (abs(self.y-b.y)<EPS)
@@ -171,6 +175,12 @@ class GEO_ALGOS:
         
     def triangle_perimeter(self, ab, bc, ca):
         return ab+bc+ca
+    
+    def triangle_area_verts(self, a, b, c):
+        ab=self.euclidean_distance(a,b)
+        bc=self.euclidean_distance(b,c)
+        ca=self.euclidean_distance(c,a)
+        return self.triangle_area_heron(ab, bc, ca)
         
     def incircle_helper(self, ab, bc, ca):
         return self.triangle_area_heron(ab, bc, ca)/(self.triangle_perimeter(ab, bc, ca)*0.5)
@@ -281,6 +291,11 @@ class GEO_ALGOS:
                 return True
         return False   
     
+    def polygon_where_pt(self, ps, p):
+        a,b=self.polygon_contains_pt(ps, p), self.polygon_has_pt(ps, p)
+        return 0 if b else 1 if a else -1
+
+    
     def polygon_centroid(self, ps):
         ans=pt_xy(0,0)
         for i in range(len(ps)-1):
@@ -296,8 +311,6 @@ class GEO_ALGOS:
                 if self.is_segments_intersect(ps[i],ps[j],ps[k],ps[l]):
                     return False
         return True
-    
-
     
     def polygon_cut(self, ps, a, b):
         ans=[]
@@ -317,11 +330,12 @@ class GEO_ALGOS:
     def convex_hull_monotone_chain(self, ps):
         def f(pts):
             r=[]
+            app,pop=r.append,r.pop
             for p in pts:
-                while len(r)>1 and self.cross_product(r[-1]-r[-2], p-r[-2])<=0:r.pop()
-                r.append(p)
+                while len(r)>1 and self.cross_product(r[-1]-r[-2], p-r[-2])<=0:pop() #< means include colinear 
+                app(p)
             return r
-        ans=sorted(set(ps))
+        ans=sorted(ps)
         if len(ans)<=1: return ans
         lower,upper=f(ans),f(ans[::-1])
         return lower[:-1] + upper[:-1]
@@ -366,15 +380,16 @@ class GEO_ALGOS:
 
 def main():
     obj=GEO_ALGOS()
+    tri=[None]*3
+    for i in range(3):
+        x,y=map(int, rf.readline().split())
+        tri[i]=pt_xy(x,y)
+    tri.append(tri[0])
     n=int(rf.readline().strip())
-    while n>0:
-        pts=[None]*n
-        for i in range(n):
-            x,y=map(float, rf.readline().split())
-            pts[i]=pt_xy(x*100,y*100)
-        ans=obj.compute_closest_pair(pts)
-        x1, y1, x2, y2=ans[1].x/100, ans[1].y/100, ans[2].x/100, ans[2].y/100
-        print("{} {} {} {}".format(x1, y1, x2, y2))
-        n=int(rf.readline().strip())
-
+    amt=0
+    for i in range(n):
+        x,y=map(int, rf.readline().split())
+        if 0<=obj.polygon_where_pt(tri, pt_xy(x,y)):
+            amt+=1
+    print("{:.1f}\n{}".format(obj.triangle_area_verts(tri[0],tri[1],tri[2]),amt))
 main()
