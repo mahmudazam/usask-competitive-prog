@@ -10,9 +10,9 @@ NUM_SIG=2
 # a lot of matrix operation stuffs 
 #uncomment the comment the commented lines for floating point cords
 class pt_xy:
-    #def __init__(self, new_x, new_y):self.x,self.y=map(round,[new_x,new_y])
-    def __init__(self, new_x=float(0), new_y=float(0)):
-        self.x,self.y=round(new_x, NUM_SIG), round(new_y, NUM_SIG)
+    def __init__(self, new_x, new_y):self.x,self.y=map(round,[new_x,new_y])
+    #def __init__(self, new_x=float(0), new_y=float(0)):
+    #    self.x,self.y=round(new_x, NUM_SIG), round(new_y, NUM_SIG)
     
     def set_pt_xy(self, n_pt_xy): self.x,self.y=n_pt_xy.x,n_pt_xy.y
     def display(self): print(self.x,self.y)
@@ -24,9 +24,9 @@ class pt_xy:
     def __floordiv__(self, c): return pt_xy(self.x//c, self.y//c)
     
     #def __lt__(self, b): return (self.x<b.x) if self.x!=b.x else (self.y<b.y)
-    #def __eq__(self, b): return (self.x==b.x) and (self.y==b.y)
-    def __lt__(self, b): return (self.x<b.x) if math.fabs(self.x-b.x)>EPS else (self.y<b.y)
-    def __eq__(self, b): return (abs(self.x-b.x)<EPS) and (abs(self.y-b.y)<EPS)
+    def __eq__(self, b): return (self.x==b.x) and (self.y==b.y)
+    #def __lt__(self, b): return (self.x<b.x) if math.fabs(self.x-b.x)>EPS else (self.y<b.y)
+    #def __eq__(self, b): return (abs(self.x-b.x)<EPS) and (abs(self.y-b.y)<EPS)
     
     def __str__(self): return "{} {}".format(self.x, self.y)
     
@@ -326,49 +326,43 @@ class GEO_ALGOS:
         lower,upper=f(ans),f(ans[::-1])
         return lower[:-1] + upper[:-1]
     
-    def bf_helper(self, P):
-        ans=(self.euclidean_distance(P[0], P[1]), P[0], P[1])
-        for i in range(len(P)):
-            for j in range(i+1, len(P)):
-                nd=self.euclidean_distance(P[i], P[j])
-                if nd<ans[0]:
-                    ans=(nd, P[i], P[j])
+    def bf_helper(self, x1, x2):
+        ans=(self.dist2(self.X[x1], self.X[x1+1]), self.X[x1], self.X[x1+1])
+        for i in range(x1, x2):
+            for j in range(i+1, x2):
+                dt=self.dist2(self.X[i], self.X[j])
+                if dt<ans[0]:
+                    ans=(dt, self.X[i], self.X[j])
         return ans
 
-    def closest_pair(self, X, Y):
-        p_siz=len(X)
-        if p_siz<=3: return self.bf_helper(X)
-        ri,li,l=0,0,0
-        l_siz, r_siz=p_siz-p_siz//2, p_siz//2
-        XL, XR=X[:l_siz], X[l_siz:]
+    def closest_pair(self, x1, x2, Y):
+        n=x2-x1
+        if n<=3: return self.bf_helper(x1, x2)
+        l_siz, r_siz=x1+n-n//2, x1+n//2
+        mid=round((self.X[l_siz].x+self.X[r_siz].x)/2)
         YL, YR=[],[]
-        l=(XL[-1].x+XR[0])/2
+        rapp,lapp=YR.append,YL.append
         for py in Y:
-            if py.x<=l: YL.append(py)
-            else: YR.append(py)
-        dl,dr=self.closest_pair(XL, YL), self.closest_pair(XR, YR)
-        da=min(dl, dr)
-
-        YP=[p for p in Y if math.fabs(p.x-l)<da[0]]
+            if mid<py.x: rapp(py)
+            else:        lapp(py)
+        dl=self.closest_pair(x1, l_siz, YL)
+        if dl[0]==0: return dl
+        dr=self.closest_pair(l_siz, x2, YR)
+        if dr[0]==0: return dr
+        da=dl if dl[0]<dr[0] else dr
+        YP=[p for p in Y if da[0]>(p.x-mid)**2]
         for i in range(len(YP)):
             for j in range(i+1, len(YP)):
-                if self.c_cmp(YP[j].y-YP[i].y, da[0])>=0: break
-                nd=self.euclidean_distance(YP[i], YP[j])
-                if self.c_cmp(nd, da[0])<0:
-                    da=(nd, YP[i], YP[j])
-                    break
+                if (YP[i].y-YP[j].y)**2>=da[0]: break
+                dt=self.dist2(YP[i],YP[j])
+                if dt<da[0]:
+                    da=(dt,YP[i], YP[j])
         return da
 
     def compute_closest_pair(self, pts):
-        X=[pt for pt in pts]
-        X.sort()
-        Y=[pt_xy(p.y, p.x) for p in X]
-        Y.sort()
-        Y=[pt_xy(p.y, p.x) for p in Y]
-        for i in range(1, len(X)):
-            if X[i]==X[i-1]:
-                return (0, X[i], X[i])
-        return self.closest_pair(X, Y)
+        self.X=sorted(pts, key=lambda pt_xy: pt_xy.x)
+        Y=sorted(pts, key=lambda pt_xy: pt_xy.y)
+        return self.closest_pair(0,len(pts), Y)
 
 def main():
     obj=GEO_ALGOS()
@@ -377,9 +371,10 @@ def main():
         pts=[None]*n
         for i in range(n):
             x,y=map(float, rf.readline().split())
-            pts[i]=pt_xy(x,y)
+            pts[i]=pt_xy(x*100,y*100)
         ans=obj.compute_closest_pair(pts)
-        print("{} {}".format(str(ans[1]),str(ans[2])))
+        x1, y1, x2, y2=ans[1].x/100, ans[1].y/100, ans[2].x/100, ans[2].y/100
+        print("{} {} {} {}".format(x1, y1, x2, y2))
         n=int(rf.readline().strip())
 
 main()
