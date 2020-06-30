@@ -60,7 +60,7 @@ class GEO_ALGOS:
         return pt_xy(p.x*math.cos(t)-p.y*math.sin(t), p.x*math.sin(t)+p.y*math.cos(t))
     
     def point_rotation_wrt_line(self, a, b, c):
-        return self.epscmp(self.cross_product(b-a,c-a))
+        return self.c_cmp(self.cross_product(b-a,c-a),0)
     
     def angle_abc(self, a, b, c): #MARKED
         ab,cb=a-b,c-b
@@ -165,6 +165,12 @@ class GEO_ALGOS:
         for i in range(min(len(ps),len(qs))):
             rTans.append((ps[i], qs[i]))
         return rTans
+
+    def triangle_has_pt(self, a, b, c, p):
+        t1=(self.point_rotation_wrt_line(a,b,p)>=0)
+        t2=(self.point_rotation_wrt_line(b,c,p)>=0)
+        t3=(self.point_rotation_wrt_line(c,a,p)>=0)
+        return t1 and t2 and t3
     
     def triangle_area_2bh(self, b, h):
         return b*h/2
@@ -177,10 +183,7 @@ class GEO_ALGOS:
         return ab+bc+ca
     
     def triangle_area_verts(self, a, b, c):
-        ab=self.euclidean_distance(a,b)
-        bc=self.euclidean_distance(b,c)
-        ca=self.euclidean_distance(c,a)
-        return self.triangle_area_heron(ab, bc, ca)
+        return (self.cross_product(a,b)+self.cross_product(b,c)+self.cross_product(c,a))/2
         
     def incircle_helper(self, ab, bc, ca):
         return self.triangle_area_heron(ab, bc, ca)/(self.triangle_perimeter(ab, bc, ca)*0.5)
@@ -335,10 +338,25 @@ class GEO_ALGOS:
                 while len(r)>1 and self.cross_product(r[-1]-r[-2], p-r[-2])<=0:pop() #< means include colinear 
                 app(p)
             return r
-        ans=sorted(ps)
+        ans=sorted(set(ps))
         if len(ans)<=1: return ans
         lower,upper=f(ans),f(ans[::-1])
         return lower[:-1] + upper[:-1]
+    
+    def polygon_rotating_caliper(self, ps):
+        n,t,ans=len(ps)-1,0,0.0
+        for i in range(n):
+            pi=ps[i]
+            pii=ps[i+1] if i+1<=n else ps[0]
+            p=pii-pi
+            while (t+1)%n!=i:
+                if self.c_cmp(self.cross_product(p, ps[t+1]-pi)-self.cross_product(p, ps[t]-pi),0)<0:
+                    break
+                t=(t+1)%n
+            #ans=max(ans, self.triangle_area_verts(pi, pii, ps[t]))
+            ans=max(ans, self.euclidean_distance(pi, ps[t]))
+            ans=max(ans, self.euclidean_distance(pii, ps[t]))
+        return ans
     
     def bf_helper(self, x1, x2):
         ans=(self.dist2(self.X[x1], self.X[x1+1]), self.X[x1], self.X[x1+1])
