@@ -395,6 +395,29 @@ class GEO_ALGOS:
         self.X=sorted(pts, key=lambda pt_xy: pt_xy.x)
         Y=sorted(pts, key=lambda pt_xy: pt_xy.y)
         return self.closest_pair(0,len(pts), Y)
+    
+    def dt_find_lct(self):
+        return
+    
+    def dt_divide(self, l, r):
+        n=r-l
+        if n<4: 
+            #base case a triangle or less
+            ch=self.convex_hull_monotone_chain(self.V[l:r])
+            #add the triangulation start here
+            return ch
+        nl,nr=l+n-n//2, l+n//2
+        #get the left and right convex hulls recursively
+        self.CHL=self.dt_divide(l, nl) 
+        self.CHR=self.dt_divide(nl, r)
+        #get the lower and upper common tangent
+        return 
+        
+        
+    
+    def compute_delaunay_triangles(self, ps):
+        self.V=sorted(ps)
+        
 
 def main():
     obj=GEO_ALGOS()
