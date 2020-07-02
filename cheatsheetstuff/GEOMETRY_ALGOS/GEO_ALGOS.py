@@ -9,6 +9,35 @@ from sys import stdin as rf
 #polygon_signed_area tested on polygonarea
 #polygon_where_pt tested on pointinpolygon for in on out of polygon
 
+
+class DLL:
+    def __init__(self):
+        self.dll={}
+        self.head=None
+        
+    def first(self): return self.dll[self.head]
+    
+    def insert_after(self, a, b):
+        c=self.dll[a][1]
+        self.dll[b]=(a,c)
+        self.dll[a]=(self.dll[a][0],b)
+        self.dll[c]=(b,self.dll[c][1])
+        
+    def insert(self, v):
+        if len(self.dll)==0:
+            self.dll[v]=(v,v)
+            self.head=v
+            return
+        elif len(self.dll)==1:
+            self.dll[self.head]=(v,v)
+            self.dll[self.head]=(self.head,self.head)
+            #change head here
+            return
+        else:
+            for k,p in self.dll.items():
+                if 
+        
+
 EPS=1e-12
 NUM_SIG=9
 #todo make sure we know the math behind the functions it loosk like 
