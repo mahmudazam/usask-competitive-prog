@@ -6,6 +6,10 @@ INF=1000000000
 class GRAPH_ALGOS():
     def __init__(self):
         self.adj={}
+        
+    def init_ff(self, n, m, c):
+        self.R,self.C=n,m
+        self.mat=[[c]*m for _ in range(n)]
     
     def init_mat(self, n):
         self.V=n
@@ -21,7 +25,6 @@ class GRAPH_ALGOS():
         
     def add_edge_mat(self, u, v, w):
         self.mat[u][v]=min(w, self.mat[u][v])
-    
     
     def dijkstras(self, s, t):
         import heapq as h
@@ -51,3 +54,20 @@ class GRAPH_ALGOS():
                 for k in range(self.V):
                     if self.mat[k][k]<0 and self.mat[i][k]!=INF and self.mat[k][j]!=INF:
                         self.mat[i][j]=-INF
+    
+    def ff_dfs(self, r, c, a, b):
+        if not 0<=r<self.R and 0<=c<self.C: return 0
+        if self.mat[r][c]!=a: return 0
+        ans,self.mat[r][c]=1,b
+        for rr,cc in drc: ans+=self.ff_dfs(r+rr,c+cc,a,b)
+        return ans
+    
+    def ff_bfs(self, i, j, a, b):
+        stk=[(i,j)]
+        while stk:
+            r,c=stk.pop()
+            if not 0<=r<self.R and 0<=c<self.C: continue
+            if self.mat[r][c]!=a: continue
+            self.mat[r][c]=b
+            for rr,cc in drc: stk.append((r+rr,c+cc))
+        
