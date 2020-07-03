@@ -70,4 +70,38 @@ class GRAPH_ALGOS():
             if self.mat[r][c]!=a: continue
             self.mat[r][c]=b
             for rr,cc in drc: stk.append((r+rr,c+cc))
-        
+    
+    #look up how to start from one source node 
+    def topology_sort_bfs(self,s):
+        from collections import deque
+        q, deg, res=deque(), [0]*len(self.adj), []
+        for u in self.adj: 
+            for v in u: deg[i]+=1
+        for i in self.adj: 
+            if deg[i]==0: q.append(i)
+        while q:
+            u=q.pop(); res.append(u)
+            for v in self.adj:
+                deg[v]-=1
+                if deg[v]==0: q.append(v)
+    
+    def topolog_sort_dfs(self, s):
+        #fill in later 
+        pass
+    
+    def mst_prims_faster(self):
+        import heapq as h
+        n=len(self.adj)
+        dst, vis, mst, msc=[INF]*n, [False]*n, [], 0
+        pq=[(0,0,0)]
+        while pq and len(mst)<n:
+            w,u,ov=h.heappop(pq)
+            if vis[u]: continue
+            vis[u], msc=True, msc+w
+            mst.append((u+1, ov+1))
+            for nv,w in self.adj[u].items():
+                if vis[nv] or w>dst[nv]: continue
+                dst[nv]=w
+                h.heappush(pq, (w,nv,u))
+        for u,v in mst[1:]:
+            print(u,v)
