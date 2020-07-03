@@ -1,7 +1,7 @@
 from sys import stdin as rf
 #dijkstras tested shortestpath1, shortestpath2(modified works), flowerytrails(modified works), fulltank(modified)
 #APSP tested on allpairspath, kastenlauf(modified), arbitrage
-INF=1000000000
+INF=2000000000
 
 class GRAPH_ALGOS():
     def __init__(self):
@@ -89,6 +89,7 @@ class GRAPH_ALGOS():
         #fill in later 
         pass
     
+    #falls to neg weights 
     def mst_prims_faster(self):
         import heapq as h
         n=len(self.adj)
@@ -98,10 +99,16 @@ class GRAPH_ALGOS():
             w,u,ov=h.heappop(pq)
             if vis[u]: continue
             vis[u], msc=True, msc+w
-            mst.append((u+1, ov+1))
+            mst.append((u, ov))
             for nv,w in self.adj[u].items():
                 if vis[nv] or w>dst[nv]: continue
                 dst[nv]=w
                 h.heappush(pq, (w,nv,u))
-        for u,v in mst[1:]:
-            print(u,v)
+        if len(mst)<n:
+            print("Impossible")
+        else:
+            print(msc)
+            ans=[(min(u,v), max(u, v)) for u, v in mst[1:]]
+            ans.sort()
+            for u, v in ans:
+                print(u,v)
