@@ -131,3 +131,14 @@ class GRAPH_ALGOS():
         for i in self.adj:
             if self.col[i]==INF:
                 bipartite_helper(i)
+    
+    def bfs_vanilla(self, s, t):
+        from collections import
+        dst=[INF]*len(self.adj)
+        q, dst[s]=deque(), 0; q.append(s)
+        while q:
+            u=q.popleft()
+            for v in self.adj[u]:
+                if dst[v]>dst[u]+1:
+                    dst[v]=dst[u]+1
+                    q.append(u)
