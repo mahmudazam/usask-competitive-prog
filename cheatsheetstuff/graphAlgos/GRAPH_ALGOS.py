@@ -130,10 +130,10 @@ class GRAPH_ALGOS():
         self.col=[INF]*len(self.adj)
         for i in self.adj:
             if self.col[i]==INF:
-                bipartite_helper(i)
+                self.bipartite_helper(i)
     
     def bfs_vanilla(self, s, t):
-        from collections import
+        from collections import deque
         dst=[INF]*len(self.adj)
         q, dst[s]=deque(), 0; q.append(s)
         while q:
@@ -142,3 +142,30 @@ class GRAPH_ALGOS():
                 if dst[v]>dst[u]+1:
                     dst[v]=dst[u]+1
                     q.append(u)
+                    
+    def tarjan_helper(self, u):
+        self.num_cmp+=1
+        self.low[u]=self.num[u]=self.num_cmp
+        self.stk.append(u); self.vis.add(u)
+        for v in self.adj[u]:
+            if self.num[v]==INF:
+                self.tarjan_helper(v)
+                self.low[u]=min(self.low[u], self.low[v])
+            elif v in vis:
+                self.low[u]=min(self.low[u], self.num[v])
+        if self.low[u]==self.num[u]:
+            self.SCC.append(set(self.stk))
+            self.stk=[]
+            #remove vis too?
+    
+    
+    def tarjanSCC():
+        from sys import setrecursionlimit
+        setrecursionlimit(100000)
+        self.low={i:INF for i in self.adj}
+        self.num={i:INF for i in self.adj}
+        self.stk, self.vis, self.SCC=[], set(), []
+        self.num_cmp=0
+        for v in self.adj:
+            if self.num[v]==INF:
+                self.tarjan_helper(v)
