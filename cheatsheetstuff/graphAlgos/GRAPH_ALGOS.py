@@ -112,3 +112,22 @@ class GRAPH_ALGOS():
             ans.sort()
             for u, v in ans:
                 print(u,v)
+    
+    def bipartite_helper(self, s):
+        from collection import deque
+        self.col[s]=0
+        if len(self.adj[s]==0): return
+        b, q=True, deque(); q.append(s)
+        while b and q:
+            u=q.popleft()
+            for v in self.adj[u]:
+                if self.col[v]!=INF:
+                    b=False
+                    break # can we remove this into a return stat
+                self.col[v]=not self.col[u]
+    
+    def bipartite_colour(self):
+        self.col=[INF]*len(self.adj)
+        for i in self.adj:
+            if self.col[i]==INF:
+                bipartite_helper(i)
