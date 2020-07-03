@@ -8,34 +8,6 @@ from sys import stdin as rf
 #polygon_area tested on convexpolygonarea
 #polygon_signed_area tested on polygonarea
 #polygon_where_pt tested on pointinpolygon for in on out of polygon
-
-
-class DLL:
-    def __init__(self):
-        self.dll={}
-        self.head=None
-        
-    def first(self): return self.dll[self.head]
-    
-    def insert_after(self, a, b):
-        c=self.dll[a][1]
-        self.dll[b]=(a,c)
-        self.dll[a]=(self.dll[a][0],b)
-        self.dll[c]=(b,self.dll[c][1])
-        
-    def insert(self, v):
-        if len(self.dll)==0:
-            self.dll[v]=(v,v)
-            self.head=v
-            return
-        elif len(self.dll)==1:
-            self.dll[self.head]=(v,v)
-            self.dll[self.head]=(self.head,self.head)
-            #change head here
-            return
-        else:
-            for k,p in self.dll.items():
-                if 
         
 
 EPS=1e-12
@@ -44,6 +16,24 @@ NUM_SIG=9
 # a lot of matrix operation stuffs 
 #uncomment the comment the commented lines for floating point cords
 class pt_xy:
+    
+    class DLL:
+        def __init__():
+            self.LI={}
+            self.head,self.tail=None,None
+            self.it=None
+
+
+
+    class ADJDLL:
+        def __init__(self, n):
+            self.adj={i:DLL() for i in range(n)}
+
+        def PRED(self, a, b): return self.adj[a][b][0]
+        def SUCC(self, a, b): return self.adj[a][b][1]
+
+        def INSERT(self, L, R):
+            return 0
     def __init__(self, new_x, new_y):self.x,self.y=map(int,[new_x,new_y])
     #def __init__(self, new_x=float(0), new_y=float(0)): self.x,self.y=round(new_x, NUM_SIG), round(new_y, NUM_SIG)
     
