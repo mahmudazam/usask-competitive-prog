@@ -87,6 +87,21 @@ class DLL:
             bb,cc=self.LIS[b], self.LIS[c]
             self.LIS[a]=(c,b)
             self.LIS[b], self.LIS[c]=(a, bb[1]), (cc[0], a)
+
+class ADJDLL:
+    def __init__(self, n):
+        self.adj={i: DLL(i) for i in range(n)}
+        
+    def PRED(self, a, b): return self.adj[a][b][0]
+    def SUCC(self, a, b): return self.adj[a][b][1]
+    
+    def INSERT(self, L, R, LL, RR):#left is before right is after 
+        self.adj[L].add_after(R, RR)
+        self.adj[R].add_before(L, LL)
+    
+    def DELETE(self, L, R):
+        self.adj[L].rem_el(R)
+        self.adj[R].rem_el(L)
             
 
 class GEO_ALGOS:
