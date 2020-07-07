@@ -16,24 +16,6 @@ NUM_SIG=9
 # a lot of matrix operation stuffs 
 #uncomment the comment the commented lines for floating point cords
 class pt_xy:
-    
-    class DLL:
-        def __init__():
-            self.LI={}
-            self.head,self.tail=None,None
-            self.it=None
-
-
-
-    class ADJDLL:
-        def __init__(self, n):
-            self.adj={i:DLL() for i in range(n)}
-
-        def PRED(self, a, b): return self.adj[a][b][0]
-        def SUCC(self, a, b): return self.adj[a][b][1]
-
-        def INSERT(self, L, R):
-            return 0
     def __init__(self, new_x, new_y):self.x,self.y=map(int,[new_x,new_y])
     #def __init__(self, new_x=float(0), new_y=float(0)): self.x,self.y=round(new_x, NUM_SIG), round(new_y, NUM_SIG)
     
@@ -55,6 +37,57 @@ class pt_xy:
     
     def __round__(self, n): return pt_xy(round(self.x,n),round(self.y,n))
     def __hash__(self):return hash((self.x,self.y))
+
+class DLL:
+    def __init__(self, v):
+        self.LIS={}
+        self.head=None
+        self.Nam=v
+    
+    def __len__(self): return len(self.LIS)
+    
+    def rem_el(self, el):
+        if el not in self.LIS:
+            print("error {} not in {} when deleting".format(el, self.Nam))
+            return
+        p,s=self.LIS[el] #pred, succ
+        if el==self.head: self.head=s
+        del self.LIS[el]
+        leno=len(self.LIS)
+        if leno==0: return
+        elif leno==1: self.LIS[p]=(None, None)
+        elif leno==2: self.LIS[p], self.LIS[s]=(s, s), (p, p)
+        else:
+            self.LIS[p]=(self.LIS[p][0], s)
+            self.LIS[s]=(self.LIS[s][0], p)
+            
+    def add_first(self, a):
+        self.head=a
+        self.LIS[a]=(None, None)
+    
+    #add a after b
+    def add_after(self, a, b):
+        leno=len(self.LIS)
+        if leno==0: self.add_first(b); return; #or print an error in our algo
+        elif leno==1: self.LIS[a], self.LIS[b]=(b, b), (a, a)
+        else:
+            c=self.LIS[b][1]
+            bb,cc=self.LIS[b], self.LIS[c]
+            self.LIS[a]=(b,c)
+            self.LIS[b], self.LIS[c]=(bb[0], a), (a, cc[1])
+    
+    #add a before b
+    def add_after(self, a, b):
+        leno=len(self.LIS)
+        if b==self.head: self.head=a
+        if leno==0: self.add_first(b); return; #or print an error in our algo
+        elif leno==1: self.LIS[a], self.LIS[b]=(b, b), (a, a)
+        else:
+            c=self.LIS[b][0]
+            bb,cc=self.LIS[b], self.LIS[c]
+            self.LIS[a]=(c,b)
+            self.LIS[b], self.LIS[c]=(a, bb[1]), (cc[0], a)
+            
 
 class GEO_ALGOS:
     def __init__(self):
