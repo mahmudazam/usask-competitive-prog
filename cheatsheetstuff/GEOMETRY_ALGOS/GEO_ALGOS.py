@@ -1,3 +1,4 @@
+
 import math
 from sys import stdin as rf
 
@@ -28,12 +29,16 @@ class pt_xy:
     def __truediv__(self, c): return pt_xy(self.x/c, self.y/c) #does this even make sense in a int based point
     def __floordiv__(self, c): return pt_xy(self.x//c, self.y//c)
     
+
     def __lt__(self, b): return (self.x<b.x) if self.x!=b.x else (self.y<b.y)
     def __eq__(self, b): return (self.x==b.x) and (self.y==b.y)
     #def __lt__(self, b): return (self.x<b.x) if math.fabs(self.x-b.x)>EPS else (self.y<b.y)
     #def __eq__(self, b): return (abs(self.x-b.x)<EPS) and (abs(self.y-b.y)<EPS)
     
     def __str__(self): return "{} {}".format(self.x, self.y)
+
+    
+    def __str__(self): return "(x={},y={})".format(self.x, self.y)
     
     def __round__(self, n): return pt_xy(round(self.x,n),round(self.y,n))
     def __hash__(self):return hash((self.x,self.y))
@@ -102,7 +107,7 @@ class ADJDLL:
     def DELETE(self, L, R):
         self.adj[L].rem_el(R)
         self.adj[R].rem_el(L)
-            
+
 
 class GEO_ALGOS:
     def __init__(self):
@@ -233,11 +238,13 @@ class GEO_ALGOS:
             rTans.append((ps[i], qs[i]))
         return rTans
 
+
     def triangle_has_pt(self, a, b, c, p):
         t1=(self.point_rotation_wrt_line(a,b,p)>=0)
         t2=(self.point_rotation_wrt_line(b,c,p)>=0)
         t3=(self.point_rotation_wrt_line(c,a,p)>=0)
         return t1 and t2 and t3
+
     
     def triangle_area_2bh(self, b, h):
         return b*h/2
