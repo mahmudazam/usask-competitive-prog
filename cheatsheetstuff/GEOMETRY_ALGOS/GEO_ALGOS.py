@@ -464,12 +464,18 @@ class GEO_ALGOS:
         return self.closest_pair(0,len(pts), Y)
     
     def dt_find_lct(self, lb, le, rb, re):
-        
         X,Y=le,rb
-        Z,ZZ,ZZZ=self.CHR[self.CHRM[Y]+1], self.CHL[self.CHLM[X]+1], self.DT.PRED(X, ZZ)
-        while True:
-            pass
-        return
+        ZT=self.CHL[self.CHLM[X]+1]
+        ZR, ZL=self.CHR[self.CHRM[Y]+1], self.DT.PRED(X, ZT)
+        while True: #check online later to see if it needs to be like this or if it needs to be something else 
+            if self.point_rotation_wrt_line(self.V[X], self.V[Y], self.V[ZR])<0:
+                Y,ZR=ZR,self.DT.SUCC(ZR, Y)
+            else:
+                if self.point_rotation_wrt_line(self.V[X], self.V[Y], self.V[ZL])<0:
+                    X,ZL=ZL,self.DT.PRED(ZL, X)
+                else:
+                    return (X,Y)
+        return None #error
     
     def dt_divide(self, l, r):
         n=r-l
