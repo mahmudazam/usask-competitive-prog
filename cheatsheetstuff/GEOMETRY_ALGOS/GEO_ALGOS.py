@@ -463,6 +463,21 @@ class GEO_ALGOS:
         Y=sorted(pts, key=lambda pt_xy: pt_xy.y)
         return self.closest_pair(0,len(pts), Y)
     
+    #might be a way to merge the two lower ones
+    def dt_find_uct(self, lb, le, rb, re):
+        X,Y=le,rb
+        ZT=self.CHL[self.CHLM[X]+1]
+        ZR, ZL=self.CHR[self.CHRM[Y]+1], self.DT.PRED(X, ZT)
+        while True: #check online later to see if it needs to be like this or if it needs to be something else 
+            if self.point_rotation_wrt_line(self.V[X], self.V[Y], self.V[ZR])<0:
+                Y,ZR=ZR,self.DT.SUCC(ZR, Y)
+            else:
+                if self.point_rotation_wrt_line(self.V[X], self.V[Y], self.V[ZL])<0:
+                    X,ZL=ZL,self.DT.PRED(ZL, X)
+                else:
+                    return (X,Y)
+        return None #error
+    
     def dt_find_lct(self, lb, le, rb, re):
         X,Y=le,rb
         ZT=self.CHL[self.CHLM[X]+1]
@@ -485,21 +500,55 @@ class GEO_ALGOS:
             #add the triangulation start here
             return ch
         nl,nr=l+n-n//2, l+n//2
-        #get the left and right convex hulls recursively
+        #get the left and right convex hulls recursively maybe change that storage method
+        #so its not in a object var idk just want to get it done
         self.CHL=self.dt_divide(l, nl) 
         self.CHR=self.dt_divide(nl, r)
         self.CHLM={el:i for el,i in enumerate(self.CHL)}
         self.CHRM={el:i for el,i in enumerate(self.CHR)}
         BT=self.dt_find_lct(l, nl-1, nl, r)
-        #get the lower and upper common tangent
-        return 
+        UT=self.dt_find_uct(l, nl-1, nl, r)
+        L,R=BT[0], BT[1]
+        LP,RP=self.CHL[self.CHLM[L]+1], self.CHR[self.CHRM[R]+1]
+        while BT!=UT: # make this look correct
+            a=b=False
+            self.DT.INSERT(L,R,LP,RP)
+            R1=self.DT.PRED(R,L)
+            #if r1 left of line from L to R
+            if self.point_rotation_wrt_line(self.V[L], self.V[R], self.V[R1])>0:
+                R2=self.DT.PRED(R,R1)
+                while True: #put test as qtest
+                    self.DT.DELETE(R,R1)
+                    R1=R2
+                    R2=self.DT.PRED(R,R1)
+            else: a=True
+            L1=self.DT.SUCC(L,R)
+            #if l1 left of line from R to L
+            if self.point_rotation_wrt_line(self.V[R], self.V[L], self.V[L1])<0:
+                L2=self.DT.SUCC(L,L1)
+                while True: #put cond as qtest
+                    self.DT.DELETE(L, L1)
+                    L1=L2
+                    L2=self.DT.SUCC(L,L1)
+            else: b=True
+            if a: LP,L=L,L1
+            else:
+                if b: RP,R=R,R1
+                else:
+                    if True: #put qtest here
+                        RP,R=R,R1
+                    else:
+                        LP,L=L,L1
+        return self.CHL #merge them into this ?
+        
         
         
     
     def compute_delaunay_triangles(self, ps):
         self.DT=ADJDLL(len(ps))
         self.V=sorted(ps)
-        
+        ans=self.dt_divide(0, len(ps))
+        #triangulation in the DT 
 
 def main():
     obj=GEO_ALGOS()
