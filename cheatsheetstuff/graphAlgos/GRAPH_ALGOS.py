@@ -214,4 +214,7 @@ class GRAPH_ALGOS():
             if self.stk:
                 self.kosaraju_helper2(self.stk[-1])
                 self.curNum+=1
+                
+    def bellmanford(self):
+        self.dst={i:INF for i in self.adj}
         
