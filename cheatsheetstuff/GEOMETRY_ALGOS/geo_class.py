@@ -1,3 +1,4 @@
+from sys import stdin as rf
 import math as M
 EPS=1e-12
 NUM_SIG=9
@@ -48,41 +49,53 @@ class GEO_ALGOS:
   #change is_ccw????
   def is_ccw(self, a,b,c): return self.c_cmp(self.cross(b-a,c-a),0)
   def ang_abc(self, a,b,c):
-    p,q=a-b,c-b;return M.acos(self.dot(p,q)/M.sqrt(self.dot(p,p)*self.dot(q,q)))
+    p,q,f=a-b,c-b,self.dot;return M.acos(f(p,q)/M.sqrt(self.dot(p,p)*f(q,q)))
   
-  def pjt_pt_ln(self, a,b,c): p=b-a; return a+p*self.dot(c-a,p)/self.dot(p,p)
+  def pjt_pt_ln(self, a,b,c): p,f=b-a,self.dot; return a+p*f(c-a,p)/f(p,p)
   def pjt_pt_seg(self, a,b,c):
-    p=b-a; r=self.dot(p,p)
+    p,f=b-a,self.dot; r=f(p,p)
     if self.c_cmp(r,0): return a
-    r=self.dot(c-a,p)/r
+    r=f(c-a,p)/r
     return a if r<0 else b if r>1 else a+p*r
   
   def dst_pt_ln(self, a,b,c): return self.dst1(c, self.pjt_pt_ln(a,b,c))
   def dst_pt_seg(self, a,b,c): return self.dst1(c, self.pjt_pt_ln_seg(a,b,c))
   
   #following three might have bugs
-  def is_ln_par(self, a,b,c,d): return (self.c_cmp(self.cross(b-a,c-a))==0)
-  def is_ln_col(self, a,b,c,d):
-    return (self.is_ln_par(a,b,c,d) 
-    and self.is_ln_par(b,a,a,c) and self.is_ln_par(d,c,c,a))
+  def is_ln_par(self, a,b,c,d): return (self.c_cmp(self.cross(b-a,c-a),0)==0)
+  def is_ln_col(self, a,b,c,d): 
+    f=self.is_ln_par; return (f(a,b,c,d) and f(b,a,a,c) and f(d,c,c,a))
   
   def is_seg_cross(self, a,b,c,d):
+    f,g=self.dot,self.cross
+    i,j,k,l,m,n=b-a,c-a,c-b,d-a,d-b,d-c
     if self.is_ln_col(a,b,c,d):
-      
+      for p in (a,b):
+        for q in (c,d):
+          if self.c_cmp(self.dst2(p,q),0)==0: return True
+      return not(f(j,k)>0 and f(l,m)>0 and f(k,m)>0)
+    return not((g(l,i)*g(j,i)>0) or (g(a-c,n)*g(b-c,n)>0))
     
   def is_ln_cross(self, a,b,c,d): 
     return (not self.is_ln_par(a,b,c,d) or self.is_ln_col(a,b,c,d))
     
-  def pt_ln_cross(self, a,b,c,d):
-    p,q=b-a,c-d; return a+p*self.cross(c-a,q)/self.cross(p,q)
-    
+  def pt_ln_cross(self, a,b,c,d): 
+    p,q,f=b-a,c-d,self.cross; return a+p*f(c-a,q)/f(p,q)
   
+  def pt_seg_cross(self, a,b,c,d):
+    y,x,p,f=d.y-c.y,c.x-d.x,self.cross(d,c),M.fab
+    u,v=f(y*a.x+x*a.y+p),f(y*b.x+x*b.y+p)
+    return pt_xy((a.x*v+b.x*u)/(v+u),(a.y*v+b.y*u)/(v+u))
   
-
-def main():
-  print("here")
-
-main()
+  def crl_has_pt(self, a,b,r): return (self.dst1(a,b)<r)
   
+  def crl_ln_cross(self, a,b,c,r): # points with line cross circle
+    p,q,f,g=b-a,a-c,self.dot,M.sqrt; A,B,C=(p,p),f(q,p),f(q,q)-r*r; D=B*B-A*C
+    if -1==self.c_cmp(D,0): return None
+    r=c+q+p*(-B+g(D+EPS))/A; return (r) if not(D>EPS) else (r,c+q+p*(-B-f(D))/A)
   
-  
+  def crl_crl_cross(self, a,b,r,R):
+    d=self.dst1(a, b)
+    if d>r+R or d+min(r,R)<max(r,R): return None
+    x,v=(d*d-R*r+r*r)/(2*d),(b-a)/d; y=M.sqrt(r*r-x*x)
+    i,j=a+v*x,self.rot_ccw90(v)*y; return (i+j) if y<EPS else (i+j,i-j)
