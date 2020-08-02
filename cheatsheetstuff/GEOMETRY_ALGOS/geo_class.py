@@ -1,7 +1,7 @@
 from sys import stdin as rf
 import math as M
 EPS=1e-12
-NUM_SIG=9
+NUM_SIG=2
 class pt_xyz:
   def __init__(self, a, b, c): self.x,self.y,self.z=a,b,c
   def __add__(self, b): return pt_xyz(self.x+b.x, self.y+b.y, self.z+b.az)
@@ -14,7 +14,7 @@ class pt_xyz:
   def __hash__(self):return hash((self.x,self.y,self.z))
 
 class pt_xy:
-  def __init__(self, a,b):self.x,self.y=a,b
+  def __init__(self, a,b):self.x,self.y=map(round,[a,b])
   def __add__(self, b): return pt_xy(self.x+b.x, self.y+b.y)
   def __sub__(self, b): return pt_xy(self.x-b.x, self.y-b.y) 
   def __mul__(self, c): return pt_xy(self.x*c, self.y*c)
@@ -173,9 +173,79 @@ class GEO_ALGOS:
   def poly_has_pt(self, P, p):#my submition for steven book 4
     if len(P)<4: return -1
     F=self; f,n,s=F.dst1,len(P),0.0
-    for i in range(n-1):
+    for i in range(n-1): # on poly
       a,b=P[i],P[i+1]
       if abs(f(a,p)+f(p,b)-f(a,b))<EPS:return 0
-    for i in range(n-1):
+    for i in range(n-1): # in poly
       A,B=P[i],P[i+1]; a=F.ang_abc(A,p,B); s+=a if F.is_ccw(p,A,B)<0 else -a
     return 1 if abs(s)>M.pi else -1
+  
+  def poly_centroid(self, P):
+    F=self; A=pt_xy(0,0)
+    for i in range(len(P)-1): 
+      a,b=P[i],P[i+1];A=A+(a+b)*F.cross(a,b)
+    return A/(6.0*F.poly_area1(P))
+  
+  def poly_cut(self, P,a,b):
+    F=self;A,f=[],F.is_ccw; g=A.append
+    for i in range(len(P)-1):
+      p,q=P[i],P[i+1]; s,t=f(a,b,p),f(a,b,q)
+      if 1==s: g(p)
+      elif 0==s:
+        g(p); continue
+      if 1==s and -1==t: g(F.pt_seg_cross(p,q,a,b))
+    if A and A[0]!=A[-1]: g(A[0])
+    return A
+
+  #https://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain
+  def convex_hull1(self, P):
+    g,p,H=len,sorted(set(P)),[]
+    def f(B):
+      for q in p:
+        while g(H)>B and self.is_ccw(H[-2],H[-1],q)<0: H.pop()
+        H.append(q)
+      H.pop()
+    if g(p)<=1: return p
+    f(1); p=p[::-1]; f(g(H)+1); return H
+  
+  def poly_rot_caliper(self, P):
+    F=self; f,g=F.cross,F.dst1; n,t,A=len(P)-1,0,0.0
+    for i in range(n):
+      a,b=P[i],P[(i+1)%n]; p=b-a
+      while (t+1)%n!=i:
+        if F.c_cmp(f(p, P[t+1]-a)-f(p, P[t]-a),0)<0: break
+        t=(t+1)%n
+      A=max(A,g(a,P[t])); A=max(A,g(b,P[t]));
+    return A
+  
+  def cp_help(self, a,b):
+    F=self; p,q=F.X[a],F.X[a+1]; A=(F.dst2(p,q),p,q)
+    for i in range(a,b):
+      for j in range(i+1,b):
+        p,q=F.X[i],F.X[j]; d=F.dst2(p,q)
+        if d<A[0]: A=(d,p,q)
+    return A
+  
+  def cp_dq(self, a,b,Y):
+    F=self; n,h=b-a,F.cp_dq
+    if n<4: return F.cp_help(a,b)
+    L,R,l,r=a+n-n//2, a+n//2,[],[]; m=round((F.X[L].x+F.X[R].x)/2)
+    for p in Y:
+      r.append(p) if m<p.x else l.append(p)
+    dl=h(a,L,l)
+    if dl[0]==0: return dl
+    dr=h(L,b,r)
+    if dr[0]==0: return dr
+    d=dl if dl[0]<dr[0] else dr; A=[p for p in Y if d[0]>(p.x-m)**2]
+    for i in range(len(A)):
+      for j in range(i+1, len(A)):
+        I,J=A[i],A[j]
+        if (I.y-J.y)**2>=d[0]: break
+        D=F.dst2(I,J)
+        if D<d[0]:d=(D,I,J)
+    return d
+  
+  def cp_solve(self, P):
+    self.X=sorted(P, key=lambda pt_xy: pt_xy.x)
+    Y=sorted(P, key=lambda pt_xy: pt_xy.y)
+    return self.cp_dq(0, len(P), Y)
