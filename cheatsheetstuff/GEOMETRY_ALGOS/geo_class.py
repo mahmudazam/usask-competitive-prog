@@ -117,3 +117,65 @@ class GEO_ALGOS:
     p=(a*R+b*r)/(r+R); P,Q=f(a,r,p),f(b,R,p)
     for i in range(g(h(P),h(Q))): V.append((P[i],Q[i]))
     return V
+  
+  def tri_has_pt(self, a,b,c,p): #expand if too slow to statments
+    f=self.is_ccw; return min((f(a,b,p),f(b,c,p),f(c,a,p)))>=0
+  
+  def tri_perm(self, a,b,c): return a+b+c
+  def tri_area1(self, b,h): return b*h/2
+  def tri_area2(self, a,b,c):
+    s=self.tri_per(a,b,c)/2; return M.sqrt(s*(s-a)*(s-b)*(s-c))
+  
+  def tri_area3(self, a,b,c): f=self.cross; return (f(a,b)+f(b,c)+f(c,a))/2
+  def tri_inc_help(self, a,b,c): 
+    F=self;return F.tri_area2(a,b,c)/(F.tri_perm(a,b,c)/2)
+  
+  def tri_incir_rad(self, a,b,c):
+    f=self.dst1; return self.tri_inc_help(f(a,b),f(b,c),f(c,a))
+  
+  def tri_cic_help(self, a,b,c): return a*b*c/(4*self.tri_area2(a,b,c))
+  def tri_cic_rad(self, a,b,c):
+    f=self.dst1; return self.tri_cic_help(f(a,b),f(b,c),f(c,a))
+  
+  def tri_cir_cen(self, a,b,c,d):
+    F=self; f,g=F.cross,F.dot; p,q=b-a,d-c; p,q=pt_xy(p.y,-p.x),pt_xy(q.y,-q.x)
+    A,B=f(p,q),f(q,p)
+    if F.c_cmp(A,0)==0: return None
+    r=pt_xy(g(a,p),g(c,q));return pt_xy((r.x*q.y-r.y*p.y)/A,(r.x*q.x-r.y*p.x)/B)
+
+  #bisectors
+  def tri_ang_bisct(self, a,b,c): #set to be vars if bugs
+    f,g=M.sqrt,self.dst2; return (b-a)/f(g(b,a))*f(g(c,a))+(c-a)+a
+  def tri_perp_bisct(self, a,b): return self.rot_ccw90(b-a)+(a+b)/2
+  
+  #triangle center for incircle circum and ortho
+  def tri_incen(self, a,b,c):
+    F=self; f=F.tri_ang_bisct; return F.tri_cir_cen(a,f(a,b,c),b,f(b,c,a))
+  def tri_cic(self, a,b,c):
+    F=self; f=F.tri_perp_bisct; 
+    return F.tri_cir_cen((a+b)/2, f(a,b,c), (b+c)/2, f(b,c,a))
+  def tri_ortho(self, a,b,c): return a+b+c-self.tri_cic(a,b,c)*2
+  
+  def poly_perm(self, P):
+    return M.fsum((self.dst1(P[i],P[i+1]) for i in range(len(P)-1)))
+  def poly_area1(self, P):
+    return M.fsum((self.cross(P[i],P[i+1]) for i in range(len(P)-1)))/2
+  def poly_area2(self, P): return abs(self.poly_area1(P))
+  
+  def poly_cnvx(self, P): #my sub for steven book
+    f,e,s=self.is_ccw,len(P),1
+    if e<4: return False
+    t1=f(P[0],P[1],P[2])
+    for i in range(s, e-2):
+      if f(P[i],P[i+1],P[i+2])!=t1: return False
+    return (f(P[-2],P[0],P[1])==t1)
+  
+  def poly_has_pt(self, P, p):#my submition for steven book 4
+    if len(P)<4: return -1
+    F=self; f,n,s=F.dst1,len(P),0.0
+    for i in range(n-1):
+      a,b=P[i],P[i+1]
+      if abs(f(a,p)+f(p,b)-f(a,b))<EPS:return 0
+    for i in range(n-1):
+      A,B=P[i],P[i+1]; a=F.ang_abc(A,p,B); s+=a if F.is_ccw(p,A,B)<0 else -a
+    return 1 if abs(s)>M.pi else -1
