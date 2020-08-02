@@ -4,7 +4,7 @@ EPS=1e-12
 NUM_SIG=9
 class pt_xyz:
   def __init__(self, a, b, c): self.x,self.y,self.z=a,b,c
-  def __add__(self, b): return pt_xyz(self.x+b.x, self.y+b.y, self.z+b.z)
+  def __add__(self, b): return pt_xyz(self.x+b.x, self.y+b.y, self.z+b.az)
   def __add__(self, b): return pt_xyz(self.x-b.x, self.y-b.y, self.z-b.z)
   def __mul__(self, c): return pt_xyz(self.x*c, self.y*c, self.z*c)
   def __lt__(self, b): return ((self.x,self.y,self.z)<(b.x,b.y,b.z))
@@ -99,3 +99,21 @@ class GEO_ALGOS:
     if d>r+R or d+min(r,R)<max(r,R): return None
     x,v=(d*d-R*r+r*r)/(2*d),(b-a)/d; y=M.sqrt(r*r-x*x)
     i,j=a+v*x,self.rot_ccw90(v)*y; return (i+j) if y<EPS else (i+j,i-j)
+
+  def crl_tan_pt(self, a,r,p):
+    P,R=p-a,r**2; x=self.dot(P,P); D=x-R; C=self.c_cmp(D,0)
+    if C==-1: return []
+    if C==0: D=0
+    A,B=P*(R/x),self.rot_ccw90(P*(-r*M.sqrt(D)/x)); return [a+A-B,a+A+B]
+  
+  def crl_crl_tan(self, a,b,r,R):
+    f,g,h,V=self.crl_tan_pt,min,len,[]
+    if 0==self.c_cmp(r,R):
+      A=b-a; A=self.rot_ccw90(A*(r/M.sqrt(self.dot(A,A))));
+      V=[(a+A,b+A),(a-A,b-A)]
+    else:
+      p=(a*-R+b*r)/(r-R); P,Q=f(a,r,p),f(b,R,p)
+      V=[(P[i],Q[i]) for i in range(g(h(P),h(Q)))]
+    p=(a*R+b*r)/(r+R); P,Q=f(a,r,p),f(b,R,p)
+    for i in range(g(h(P),h(Q))): V.append((P[i],Q[i]))
+    return V
