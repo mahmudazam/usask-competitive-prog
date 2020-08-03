@@ -1,3 +1,4 @@
+#code taken from foreverbell, steven felix halim book 3 and 4
 from sys import stdin as rf
 import math as M
 EPS=1e-12
@@ -20,7 +21,7 @@ class pt_xy:
   def __mul__(self, c): return pt_xy(self.x*c, self.y*c)
   def __truediv__(self, c): return pt_xy(self.x/c, self.y/c)
   def __floordiv__(self, c): return pt_xy(self.x//c, self.y//c)
-  def __lt__(self, b): return ((self.x, self.y)<(b.x, b.y))
+  def __lt__(self, b): return ((self.y, self.x)<(b.y, b.x))
   def __eq__(self, b): return ((self.x,self.y)==(b.x,b.y))
   def __str__(self): return "{} {}".format(self.x, self.y)
   def __round__(self, n): return pt_xy(round(self.x,n),round(self.y,n))
@@ -32,11 +33,8 @@ class GEO_ALGOS:
   def c_cmp(self, a,b): return 0 if M.isclose(a, b) else -1 if a<b else 1
   
   def dot(self, a,b):   return a.x*b.x+a.y*b.y
-  def dot3d(self, a,b): return a.x*b.x+a.y*b.y+a.z*b.z
   
   def cross(self, a,b): return a.x*b.y-a.y*b.x
-  def cross3d(self, a,b): 
-    return pt_xyz(a.y*b.z-a.z*b.y, a.z*b.x-a.x*b.z, a.x*b.y-a.y*b.x)
   
   def dst1(self, a, b): return M.hypot((a-b).x, (a-b).y)
   def dst2(self, a, b): return self.dot(a-b,a-b)
@@ -249,3 +247,39 @@ class GEO_ALGOS:
     self.X=sorted(P, key=lambda pt_xy: pt_xy.x)
     Y=sorted(P, key=lambda pt_xy: pt_xy.y)
     return self.cp_dq(0, len(P), Y)
+  
+  def set_por(self, p): self.por=p
+  def ang_cmp(self, a,b): 
+    A=self.is_ccw(a[0],self.por,b[0])
+    return A if A!=0 else self.dst1(self.por,a[0])-self.dst1(self.por,b[0])
+
+def my_cmp(f):
+  class K:
+    def __init__(self, o): self.o=o
+    def __lt__(self, b): return f(self.o, b.o)<0
+  return K
+    
+class GEO_ALGOS_3D:
+  def __init__(self): pass
+  def dot3d(self, a,b): return a.x*b.x+a.y*b.y+a.z*b.z
+  def cross3d(self, a,b): 
+    return pt_xyz(a.y*b.z-a.z*b.y, a.z*b.x-a.x*b.z, a.x*b.y-a.y*b.x)
+  def vol_3d(self, a,b,c,d): F=self; return F.dot3d(d-a, F.cross3d(b-a,c-a))/6
+  def area_3d(self, a,b,c): F=self; p=F.cross(b-a,c-a); return F.dst3d(p,p)/2
+  def dst3d(self, a,b): return M.sqrt(self.dot3d(a-b,a-b))
+  
+  def pt_dst_pln_3d(self, p,a,b,c,d): 
+    return abs(p.x*a+p.y*b+p.z*c+d)/M.sqrt(a*a+b*b+c*c)
+  def pln_dst_pln_par_3d(self, a,b,c,d,D): return abs(d-D)/M.sqrt(a*a+b*b+c*c)
+  
+  def pjt_pt_ln_3d(self, a,b,c,t): #line 0, seg 1, ray 2, 1st pt is ray endpoint
+    F=self;A=F.dst3d(b,c);
+    if A==0: return b
+    else:
+      u=((a.x-b.x)*(c.x-b.x)+(a.y-b.y)*(c.y-b.y)+(a.z-b.z)*(c.z-b.z))/A
+      P=(c-b)*u+b
+      if t>0 and u<0: P=b
+      if t==1 and u>1: P=c
+      return P
+  
+  def pt_dst_ln_3d(self, a,b,c,t):F=self;return F.dst3d(a, F.pjt_pt_ln(a,b,c,t)) 
